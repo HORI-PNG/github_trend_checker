@@ -1,390 +1,414 @@
 # GitHub 週間スター上位レポート（2026-10-30）
 
 - 対象: 2026-10-23 以降に作成されたリポジトリ
-- テーマ: LLM, AI agent
+- テーマ: WebLLM
 
-## 1. [andyhuo520/digital-human-koubo](https://github.com/andyhuo520/digital-human-koubo)（テーマ / ★1,522）
+## 1. [theletterf/living-house](https://github.com/theletterf/living-house)（テーマ / ★2）
 
-**写真1枚と一文の指示から、AIエージェントが台本作成・リップシンク生成・編集・パッケージングまで自動で行い、数字人（デジタルヒューマン）の口播動画を作るAgent Skill**
+**ブラウザ内で動く小型LLMが、利用者の操作を観察してWebアプリのUIをリアルタイムに作り変える実験的プロジェクト**
 
-Claude Code や Codex などのAIエージェントに読み込ませる Agent Skill（SKILL.md 形式）とスクリプト群で、1枚の写真から固定の数字人を作り、口播（トーキングヘッド）動画を自動で仕上げます。映像生成は Renoise MCP 経由の Grok Video 1.5 などで行い、whisper による台本照合、音声の統一処理を経て、Remotion で編集・レンダリングします。トップクリエイター25本の動画をフレーム単位で分析して作った48種類のパッケージングコンポーネントと、5つの編集スタイルを備えている点が特徴です。クレジット消費前に必ず見積もりを提示し、ユーザーの承認を待つコストゲートも組み込まれています。
+Living Houseは、WebGPU上のWebLLMで小型言語モデルをブラウザ内だけで動かし、ユーザーのクリックやためらい、テキスト選択などの操作シグナルをもとに、UIの文言、CSS、ヒント、並び順、ピン留めを動的に変更する適応型UIの実験です。題材は、照明やブラインド、鍵などを扱うスマートホームアプリ「Hearth」と、あえて分かりにくいラベルを付けたワークスペースアプリ「Atrium」です。要素IDを不変に保ちつつ見た目や名前だけを変える設計により、レイアウトが人ごとに異なっても追従するライブヘルプを実現している点が新しいところです。推論・ログ・計測はすべてローカルに留まり、ビルド不要の静的ファイルとして動きます。
 
-- 写真1枚から persona.json で固定の数字人を定義し、毎回同じ人物で動画を作れる
-- Renoise MCP 経由で Grok Video 1.5 を使い、15秒以下の区間ごとにリップシンク動画を生成
-- whisper による台本照合とフレーム検査、音声統一処理で品質を担保
-- 5つの編集スタイルと48種のパッケージング部品を Remotion で組み合わせて編集
-- 生成前にクレジットを見積もり、承認を得てから実行するコストゲートを搭載
+- WebLLMでQwen2.5/Qwen3/Llama 3.2をブラウザ内実行
+- 操作シグナルから文言・スタイル・ヒント・順序・ピンを変更
+- JSONスキーマ制約付きデコードと事前検証で安全に適用
+- 不変IDに基づくテンプレートでレイアウトに追従するヘルプ
+- ビルド不要、静的サーバーで起動しテレメトリなし
 
 ### 何をするものか
 
-AIエージェントに「この数字人で30秒のライブ配信広告を作って」のように自然文で依頼すると、台本作成、リップシンクする数字人の映像生成、音声の整音、字幕、プロのYouTuber風のパッケージングまでを自動で行い、完成した MP4 を出力する Agent Skill です。README の例では、一文の指示だけから27秒の直播（ライブコマース）広告を生成し、コストは Renoise の482クレジットだったとされています。リポジトリには主スキルの digital-human-koubo と、スタイルA（金融・テック解説）用エンジンの finance-explainer の2つのスキルが含まれています。デモ動画に登場する人物はすべてAI数字人で、「内容由 AI 数字人演绎」のラベルが付けられています。
+Living Houseは「小型モデルが、使っている人に合わせてインターフェースをリアルタイムに作り変えられるか」を問う適応型UIの実験です。Simon Edwardsson氏のWorldTUI（小型モデルが端末画面の変化を予測する試み）に着想を得ており、名前はRemedyのゲーム『Control』に登場する、歩く人に合わせて自らを組み替える建物Oldest Houseにちなんでいます。対象アプリはスマートホームアプリ「Hearth」と、請求書がAccount → Statementsに隠れているなど、わざと曖昧なラベルを持つワークスペースアプリ「Atrium」の2つです。Atriumは、モデルが分かりにくい文言を直せるかを試す用途に向いています。
 
 ### 主な機能
 
-写真から作った数字人の顔・衣装・声の説明・プロンプトテンプレートを persona.json に保存し、GPT Image でライブスタジオや教室、京都の街並みなど任意のシーンに合成してから話させます。台本は15秒以下の区間に分割して生成し、whisper で文字起こしして台本と照合、各区間4フレームを検査して、Grok が字幕を焼き込んでしまった区間は再生成します。音声は1/3オクターブのスペクトルマッチング、ディエッシング、共通のルームリバーブ、ラウドネス正規化で統一します。人物の背後に大きな文字を置く TextBehind 効果や、英語・日本語・韓国語・フランス語・スペイン語・アラビア語での多言語生成（whisper による照合で94〜100%）にも対応しています。
+モデルが変更できるのは5種類です。テキストの書き換え、24種類のCSSプロパティから1つを選ぶスタイル変更、コントロール下への一行ヒント、ツールバー先頭への移動、Quick actionsバーへのピン留めです。ユーザーは要素を右クリックして「Change this」に指示を書くか、⌘K/Ctrl+Kのask barで全体への要望を出せます。「Rename Overview to Home」のような明確なコマンドはモデル推論なしで実行されます。適応の強さはGentle、Balanced、Max、Extremeの4段階から選べます。そのほか、変更ごとの承認ポップオーバー、Undo、セッション終了時のサマリー、レイアウトの保存、JSONLログのエクスポートも備えています。
 
-### 仕組み・パイプライン
+### 仕組み・アーキテクチャ
 
-処理は次の順に進みます。まず Renoise MCP・ffmpeg・whisper のセットアップを確認します。次にコンテンツを診断して5スタイルから2つを推薦し、一度の質問で brief.json を確定します。続いて script.json を作り（1区間15秒以下、中国語で約5.4字/秒）、クレジットを見積もって承認を得たら第1区間を生成し、確認後に残りを一括生成します。生成物は CDN 対策としてレンジ分割ダウンロードし、whisper とフレームで検査、音声統一処理を経て単語単位のタイムライン tl.json を作成します。最後に Remotion でスタイルテンプレートと既定のパッケージングを適用してレンダリングし、遷移中フレームとラウドネス（-14 / -16 LUFS）を確認します。パッケージング部品は pack リストに名前で指定し、タイミングは "3:积分" のような「区間:単語」形式で書きます。
+推論は専用のWeb Worker（model-worker.js）で行い、UIスレッドと分離しています。毎ラウンド、要素一覧（テキスト、目的、状態、カスタムスタイル、利用統計）、直近の操作、ユーザーの継続的な要望をモデルに渡し、JSONで回答させます。デコードは変更タイプごとに形の異なるJSONスキーマで制約され、idも適用可能な要素の種類に限定されます。スキーマはロック状態に依存しないため、WebLLMはコンパイル済み文法をラウンド間で再利用できます。提案はCSS.supportsで検証され、url()や@importなど外部を読み込む値は拒否されます。アプリ部分はCSS containmentで囲われているため、UndoやStart overは常に操作できます。
 
 ### 技術構成
 
-編集テンプレートは TypeScript と Remotion 4 で書かれており、huazi-916（9:16のデータ駆動型テンプレート）、packaging（48部品キットとギャラリー）、reference 配下の launch-169・tutorial-169・multihost-169 があります。補助スクリプトは Python とシェルで、build_tasks、rangedl、assemble、align、check_edit、cutout_video、voicefx/unify、doctor.sh、new_edit.sh、make_assets などが揃っています。人物の切り抜きには Swift（personmask.swift）で macOS の Vision を使います。音声認識は whisper.cpp、地図表示は d3-geo・topojson-client・world-atlas、アニメーション絵文字は Google Noto Emoji Animation を使っています。任意で Xiaomi MiMo TTS による声のデザインやクローンにも対応します。
+依存パッケージやビルドステップはなく、素のJavaScript、HTML、CSSで構成されています。モデルランタイムのWebLLMはCDNから読み込みます。ファイルの役割は次のとおりです。scenarios.jsはアプリ定義をデータとして持ち、docs.jsはIDベースのヘルプ記事を収めています。app.jsは要素レジストリ、描画、シグナル記録、検証、Undoを担当します。adapters.jsはモデル読み込み、プロンプト構築、スキーマ制約デコードを、dom.jsはフォーカスを保った差分DOM更新を、requests.jsは直接コマンドの解析を、performance.jsはローカルの性能集計を担います。テストはNode.jsの組み込みテストランナーで書かれています。
 
 ### 使い方・導入方法
 
-git clone したあと、Claude Code なら ~/.claude/skills/、Codex なら ~/.codex/skills/ に2つのスキルフォルダをコピーします。WorkBuddy や OpenClaw などでは zip にしてインポートします。次に renoise.ai でアカウントを作り、Renoise MCP を接続します。Claude Code では /plugin marketplace add ArcoCodes/renoise-plugins-official を、Codex では codex mcp add renoise --url https://renoise.ai/api/public/mcp を使い、ログインはブラウザで行うため API キーは不要です。ローカルには ffmpeg、Python 3（numpy・Pillow）、Node.js 18以上、whisper-cli と ggml-medium-q5_0.bin モデルを用意し、doctor.sh で不足を確認します。効果音とプレースホルダーのBGMは make_assets.py でコード生成できます。
+WebGPU対応の最近のChromeまたはEdgeが必要です。リポジトリをcloneし、python3 -m http.server 8642 などの静的サーバーで配信して http://localhost:8642 を開きます。続いてQwen2.5（0.5B/1.5B/3B）、Qwen3（1.7B/4B、thinkingオフ）、Llama 3.2 3Bからモデルを選びます。初回は数百MB〜数GBのダウンロードが発生しますが、以降はブラウザにキャッシュされます。READMEでは、Qwen2.5 1.5Bが実用上の最小モデルとされ、M系ノートPCで1ラウンド約4〜6秒とあります。プロンプト、許可する変更、観測するシグナル、閾値、温度はセットアップ画面で編集できます。node --test *.test.mjs を実行すれば、モデルをダウンロードせずにロジックを検証できます。
 
 ### 注目ポイント・注意点
 
-映像生成は Renoise の有料クレジットを消費します。目安として27秒の広告で482、約4分半のチュートリアルで約3,250クレジットです。TextBehind 効果は Apple Vision を使うため macOS 専用で、それ以外はクロスプラットフォームとされています。Grok は自前の音声から口の動きを作るため、後から別の声に差し替えると約100msのずれが出ます。リポジトリ内の material: ID は作者のアカウント用なので、自分で数字人を登録し直す必要があります。動作確認済みと明記されているのは Claude Code のみで、他のエージェントは「動くはず」という扱いです。Remotion は従業員4人以上の企業では商用ライセンスが必要です。また、本人または許可を得た顔・声のみを使うこと、AI生成である旨を表示することなど、責任ある利用のルールが明記されています。
+最も興味深いのは、人ごとに形が変わるUIをどう文書化するかへの回答です。ヘルプ記事は{{nav_overview}}のような要素IDで書かれ、現在の名前、旧名、ライブ状態、ピン状態に応じて描画されます。各名前のShow meリンクからは、該当要素をハイライト表示できます。提案が拒否され続けたり操作上の摩擦がなくなったりすると、セッション終了を提案する検出機能もあります。エクスポートしたログは、将来的に役立った変更で小型モデルを学習させる用途を想定しています。注意点として、0.5Bモデルは自動リネームができません。また、汎用的な要望は誤解されることがあるため、Undoでの確認が前提です。テーマはライトのみで、スター数も少ない初期段階の実験的リポジトリです。
 
-- 技術構成: TypeScript, Remotion 4, React (TSX), Python 3 (numpy, Pillow), Shell, Swift (macOS Vision), ffmpeg, whisper.cpp, Node.js 18+, Renoise MCP (Grok Video 1.5, GPT Image 2.5, Wan 3.0), Xiaomi MiMo TTS（任意）, d3-geo / topojson-client / world-atlas, Google Noto Emoji Animation
-- 向いている人: Claude Code や Codex などのAIエージェントを使って、短尺広告・商品紹介・解説・チュートリアルといった口播動画を量産したい個人クリエイターやマーケター、小規模チームに向いています。プロ級のパッケージング手法を Remotion のコンポーネントとして学びたいエンジニアや、Agent Skill と MCP を組み合わせたワークフロー設計の実例を知りたい開発者にも参考になります。Renoise の有料クレジットと、ローカルでコマンドを実行できる環境が前提です。
+- 技術構成: JavaScript, HTML, CSS, WebLLM, WebGPU, Web Worker, Qwen2.5 / Qwen3 / Llama 3.2, Node.js test runner
+- 向いている人: 適応型UIやブラウザ内LLM（WebLLM/WebGPU）の活用に関心があるフロントエンドエンジニア、UXや人間とAIのインタラクションを研究する学生・研究者に向いています。小型モデルの構造化出力をJSONスキーマで制約し、安全にDOMへ反映する設計の参考にもなります。
 
-## 2. [DenisSergeevitch/ex-ussr-kinship-research](https://github.com/DenisSergeevitch/ex-ussr-kinship-research)（テーマ / ★1,282）
+## 2. [soumwadeep/ghostlight](https://github.com/soumwadeep/ghostlight)（テーマ / ★1）
 
-**旧ソ連・ロシア帝国圏の家系調査を、証拠重視で進めさせるAIエージェント向けスキル（Codex、Claude Code対応）**
+**Gemma 2をブラウザ内で動かし、故人の思い出からオフレンダと追悼文を作るローカルファーストのWebアプリ**
 
-旧ソ連15か国とロシア帝国期を対象に、教会記録、民事登録、軍歴、強制移住・弾圧記録などからルーツを探す作業を、AIエージェントに慎重な家系調査員として行わせるAgent Skillです。発見した情報はすべて出典まで追跡できるようにし、記録そのものと解釈を分け、何が証明済みで何が未確認かをはっきり示すのが特徴です。主張の確からしさはパーセンテージではなく hypothesis や corroborated といった説明可能なステータスで管理し、監査スクリプトで裏付けの弱さを検出します。指示文はロシア語で書かれていますが、エージェントはユーザーの言語で応答します。
+Ghostlightは、死者の日（Día de Muertos）をモチーフに、大切な人についての6つの問いへの回答から追悼文、インタラクティブなオフレンダ（祭壇）、オフラインで開ける記念HTMLを生成するアプリです。Gemma 2（2B）をWebLLMとWebGPUでブラウザのタブ内で動かし、記録はIndexedDBに保存されるため、バックエンドやアカウント、クラウド推論は一切ありません。質問への回答はまずアーカイブから検索し、該当がなければ回答を拒否し、引用はモデルではなくアプリ側が付与するという、幻覚を抑える設計が特徴です。Hacktoberfest 2026 DEV Challenge「Ghost in the Machine」向けに作られました。
 
-- 旧ソ連15か国とロシア帝国期の家系調査に特化したAgent Skill
-- 主張に hypothesis〜contradicted の説明可能な証拠ステータスを付与
-- 同一記録の複製は independence_group で独立証拠とみなさない
-- CSV台帳と audit_evidence.py で調査の再現性と整合性を検査
-- 既定の成果物はHTMLレポート、GEDCOM出力やPDF変換にも対応
+- Gemma 2 2BをWebLLM+WebGPUでブラウザ内実行
+- バックエンド・APIキー・環境変数なしの静的サイト
+- 検索優先の回答と拒否で幻覚を抑える設計
+- モデル不要のcandle modeとOllama連携も選択可
+- PWA対応で初回DL後は完全オフライン動作
 
 ### 何をするものか
 
-Codex や Claude Code などの Agent Skills ランタイムに組み込み、AIエージェントを旧ソ連圏・ロシア帝国圏専門の家系調査員として振る舞わせるためのスキルです。対象はロシア、ウクライナ、ベラルーシ、モルドバ、バルト三国、コーカサス三国、中央アジア五か国を含む旧ソ連15か国です。教会の出生・婚姻記録、民事登録、軍事記録、強制移住や弾圧のファイル、索引化されていないアーカイブのスキャン画像などを読み解き、出典をたどれる形で証拠を積み上げます。指示文はロシア語ですが、エージェントは英語やポーランド語、ドイツ語などユーザーの言語で応答し、史料は原綴りのまま引用して訳を添えます。
+Ghostlightは、思い出の人について「料理」「歌」「場所」「口癖」「小さな物」「やり残したこと」という6つの問いを投げかけ、その回答から三つの成果物を作ります。一つ目は回答の言葉を元にした短い追悼文、二つ目は6本のろうそく、マリーゴールド、水、パペルピカド、回答に含まれる供物を配した段状のオフレンダで、ろうそくをクリックすると元の思い出が読めます。三つ目はスクリプトを含まない単一のHTMLファイルとしての記念品で、アプリなしでオフラインで開けます。READMEは、これは霊媒でもセラピーでもなく、言葉を置く場所だと明言しています。
 
 ### 主な機能
 
-調査の受付として、問い、既知の事実、存命者の有無、調べてはいけない範囲を整理します。人物、資料（artifact）、主張、関係、検索ログをCSV台帳で管理し、出来事の発生時点での州・郡・教区・登記所といった歴史的な管轄に当てはめて調べます。革命前ロシア語、ウクライナ語、ポーランド語、ルーマニア語、ドイツ語、イディッシュ語の綴りや父称、旧姓、翻字の変種一覧も作ります。同姓同名の人物は、家屋番号や両親、代父母、正確な生年月日、所属部隊などの区別できる証拠が出るまで別の person_id として扱います。さらにアーカイブや大学などへの問い合わせ文の作成と、許可がある場合の送信、CANOの記録請求テンプレート、FamilySearch の索引調査と MCP 連携、第一次世界大戦期の GWAR 記録の検索も備えています。
+ブラウザ内のGemma 2による追悼文の執筆、アーカイブに基づいて質問に答えるAskパネル、複数のオフレンダを管理できるローカルアーカイブ（JSONのインポート・エクスポートとワンクリック削除）、記念HTMLのエクスポートを備えます。モデルをダウンロードしないcandle modeでは、ユーザー自身の文章を並べ替えるだけで書き換えません。ローカルのOllamaを使うオプションもあり、接続できない場合はクラウドではなくメモリ検索にフォールバックします。ブラウザの音声APIは音声を外部に送ることがあるため、意図的にマイク入力を持たず入力はタイピングのみです。キーボード操作、フォーカス表示、reduced-motion対応などアクセシビリティにも配慮しています。
 
 ### 仕組み・アーキテクチャ
 
-中心は SKILL.md で、作業の流れ、守るべきルール、言語方針がまとめられています。references フォルダには分野別の手引きがあり、情報源の優先順位、証拠プロトコル、地域ごとのガイド、プライバシー、ブラウザと CAPTCHA の扱いなどを扱います。地域ガイドにはベッサラビア、ガリツィア・ブコヴィナ、チェチェン人の強制移住、ドイツでの強制労働などが含まれます。情報源は原本を最優先とし、次に公式目録、索引、刊行史料集の順に当たり、家系樹やフォーラムは手がかり扱いにとどめます。assets にはCSV台帳や報告書のテンプレートがあり、scripts のPythonツールがケースの作成、資料のハッシュ化、証拠の監査を担います。監査では、引用された資料が実際にその independence_group に属している場合だけ独立証拠として数えるため、宣言だけで裏付けを作ることはできません。
+処理の流れは、6つの回答をIndexedDBのアーカイブに保存し、メモリ検索を経てGemma 2で150〜200語・3段落の追悼文を生成し、オフレンダと記念品を作るというものです。AIの仕事は二つに分かれます。Weaveは記憶からのみ三人称で書き、各段落を特定の記憶に割り当てます。Answerはまず記憶を検索し、一致がなければ「The flame has no memory of that.」と拒否、一致した場合もモデルは言い換えるだけで、引用はアプリが付与します。プロンプトはsrc/lib/ai/prompts.tsにあり、About画面にそのまま表示されます。src/lib/aiにはretrieval、candle、weave、ask、webllm、ollama、parseなどが分かれて実装されています。
 
 ### 技術構成
 
-主要言語は Python で、多くのスクリプトは Python 3 の標準ライブラリだけで動きます。オプションの scan_montage.py は Pillow を、build_pdf.py は Chrome、Chromium、Edge といった Chromium 系ブラウザを必要とします。PDFのページをPNGに書き出す機能は pypdfium2 があるときに使えます。成果物はHTMLレポート（assets/report.template.html）が基本で、家系樹のエクスポートには GEDCOM 5.5.1（UTF-8）を既定とし、必要に応じて GEDCOM 7 も選べます。tests にはユニットテストが、evals にはスキルが起動する条件や推論を確かめるYAML形式のテストケースが置かれています。scripts/ca にロシアのルート証明書が同梱されていますが、その用途は README からは不明です。
+React 19、Vite 8、TypeScript 6を基盤に、ルーティングにreact-router-dom、アニメーションにmotion、アイコンにlucide-react、IndexedDB操作にidb-keyval、ブラウザ内LLM実行に@mlc-ai/web-llm、PWA化にvite-plugin-pwaを使っています。フォントはFraunces、Instrument Sans、IBM Plex Mono。テストはvitest、リンターはoxlint、devDependenciesにplaywrightも含まれます。モデルはgemma-2-2b-it-q4f16_1-MLC（約1.4GB）で、Hugging Faceのmlc-aiリポジトリから一度だけ取得されます。READMEによると、WebLLM 0.2.86ではGemma 3 1Bのビルドが読み込めない上流の問題があるためGemma 2を採用しており、モデルIDはsrc/lib/ai/webllm.tsの1行で差し替え可能とされています。
 
 ### 使い方・導入方法
 
-Node.js がある環境なら npx skills add https://github.com/DenisSergeevitch/ex-ussr-kinship-research で導入できます。-g を付けると、プロジェクトをまたいで使える個人用インストールになります。git clone で ~/.codex/skills/ や ~/.claude/skills/ に直接置く方法もあります。使うときは、例えば「1930年代にカザフスタンへ流刑された曽祖父の両親を教会記録から探して」のように、家族についての問いをエージェントに伝えます。ケースデータはスキルのフォルダの外に置き、scripts/init_case.py でケースを作成し、hash_artifact.py で資料の SHA-256 を記録し、報告書を書く前に audit_evidence.py で台帳を検査します。PDFは明示的に頼んだときだけ build_pdf.py で書き出されます。
+git cloneの後、npm installとnpm run devを実行し、http://localhost:5173 を開くだけで動きます。環境変数、APIキー、外部サービスの設定は不要です（Node.jsは22以上）。weave画面で「Summon Gemma 2」を選ぶとWebGPU経由でモデルを使え、デスクトップのChromeかEdge、約2GBの空きグラフィックメモリが推奨です。テスト環境では1.4GBのダウンロードに約2分、追悼文生成に13.6秒だったと記載されています。npm testで20個のユニットテスト、npm run typecheck、npm run buildが利用可能。ビルドはdist/の静的サイトで、render.yamlによるRenderへのワンクリックデプロイにも対応しています。Ollamaを使う場合はOLLAMA_ORIGINS=* ollama serveで起動します。
 
 ### 注目ポイント・注意点
 
-家系調査を「監視」に使わせない設計が明確です。存命者の現住所、電話番号、アカウントの調査は拒否します。CAPTCHA への挑戦は1回だけで、外部の解読サービス、ペイウォールや地域制限の回避、流出データベースの利用は行いません。文書やDNAデータを本人の同意なく第三者サービスへアップロードすることもなく、強制移住や養子縁組などのセンシティブな発見は中立的に報告します。init_case.py はスキルのフォルダ内にケースを作ることを拒否し、個人データの誤コミットを防ぎます。既存の家系樹は証明ではなく手がかりとして扱われます。一方で、家系樹ソフトのインストール、MCP の設定、外部の家系樹の自動同期はスキルの対象外です。アーカイブの請求様式は最新のものを各自で確認する必要があります。
+プライバシーの約束を表形式で明示し、端末外に出るのは静的ページのリクエストとモデルのダウンロードのみで、回答・写真・質問・追悼文は端末から出ないと説明しています。一方で共有PCやブラウザ拡張からは守れないこと、サイトデータを消すとアーカイブも消えることも正直に書かれています。2Bモデルは小さく、アーカイブにない細部を書くことがあるため、記憶を常に表示しcandle modeを用意しているとのことです。デモのRuma Dasは架空の人物で、デモの完成追悼文はモデル出力ではなく手書きの目標文です。WebGPU非対応環境ではモデルは動かずcandle modeのみとなります。スター数は1で、作成直後のハッカソン作品である点も留意が必要です。
 
-- 技術構成: Python 3, Pillow（任意）, pypdfium2（任意）, Chromium系ブラウザ（PDF出力）, GEDCOM, CSV / YAML / HTML テンプレート, Skills CLI（Node.js、任意）, FamilySearch MCP（任意）
-- 向いている人: 旧ソ連・ロシア帝国圏にルーツを持ち、先祖の教会記録や軍歴、強制移住・弾圧の記録をたどりたい人に向いています。Codex や Claude Code を使って、出典の追跡と証拠評価を伴う再現性のある調査をしたい家系研究者や、アマチュアの系譜学者にも適しています。AIエージェント用スキルの設計例として、証拠管理や安全面のルールの作り方を学びたい開発者にも参考になります。
+- 技術構成: TypeScript, React 19, Vite 8, WebGPU, @mlc-ai/web-llm, Gemma 2 2B IT, IndexedDB, idb-keyval, vite-plugin-pwa, react-router-dom, motion, lucide-react, Vitest, oxlint, Playwright, Ollama（任意）, Render
+- 向いている人: ブラウザ内LLM（WebLLM/WebGPU）やローカルファースト・オフラインファーストなPWAの実装例を学びたいフロントエンドエンジニアや学生、検索優先・拒否付きのグラウンディング設計など小型モデルの幻覚対策に関心がある人、プライバシーを重視したAIアプリやハッカソン作品の参考を探している人に向いています。
 
-## 3. [ccch1mneyyy/dsh-go](https://github.com/ccch1mneyyy/dsh-go)（テーマ / ★1,243）
+## 3. [dadashi44/vue-llm](https://github.com/dadashi44/vue-llm)（テーマ / ★1）
 
-**DeepSeek Harness（DSH）をAndroidスマホ上で直接動かし、PCやサーバー上のDSHもリモート操作できる非公式Flutterクライアント**
+**Vue と Nuxt 向けに、ストリーミング対応の useChat やツール呼び出し、ブラウザ内 LLM 実行を提供する AI SDK**
 
-dsh-goは、オープンソースのコーディングエージェント基盤DeepSeek HarnessのAndroid向けクライアント「DSH Go」です。アプリ内にUbuntu・Node.js・DSHの実行環境を構築でき、RootやTermuxなしでスマホ単体でエージェントを動かせるほか、SSHやDSH Remote経由でPC・サーバー上のDSHにも接続できます。ネイティブUIとWeb版の切り替え、アクセシビリティを使ったスマホ操作、端末間暗号化された会話共有、デスクトップに出てくるマスコット（Deepy・鯨娘）など、モバイルならではの機能を多数備えている点が特徴です。DeepSeek公式とは無関係のコミュニティ製プロジェクトで、AGPL-3.0で公開されています。
+vue-llm は、Vue 3.3 以上と Nuxt で LLM チャット機能を組み込むための TypeScript 製 SDK です。リアクティブな useChat() を中心に、OpenAI、Anthropic、Gemini、Ollama を同じインターフェースで扱えます。WebGPU を使ってブラウザ内でモデルを動かす機能、ツール呼び出しを Vue コンポーネントとして描画する Generative UI、Vue DevTools 連携も備えています。ランタイム依存は peer dependency の vue だけで、Vue 2.7 でも composable を利用できます。
 
-- Root・Termux不要でスマホ内にLinux環境とDSHを構築して実行
-- SSH/DSH Remote経由でPCやサーバー上のDSHも遠隔操作できる
-- アクセシビリティ権限でAIに画面読み取り・タップ操作をさせる機能
-- Flutter（Dart）UIとKotlinによるAndroidネイティブ実装の構成
-- AGPL-3.0公開、sdk/とexamples/はMIT、名称・マスコットは対象外
+- useChat() でストリーミング、中断、再生成を数行で実装できる
+- OpenAI、Anthropic、Gemini、Ollama、WebGPU を同じ API で扱える
+- ツール呼び出しを Vue コンポーネントとして描画する Generative UI を備える
+- リトライ、レート制限、永続化、プロンプトテンプレートを標準で提供
+- Nuxt モジュールと DevTools タブがあり、ランタイム依存は vue のみ
 
 ### 何をするものか
 
-DSH Goは、DeepSeek Harness（DSH）を手元のAndroid端末で扱うためのクライアントアプリです。動作モードは大きく二つあり、一つはアプリ内にUbuntu、Node.js、DSHランタイムをインストールしてスマホ自体でDSHエンジンを動かす「本機実行」、もう一つはSSHやDSH Remoteを通じてPCやサーバーで動いているDSHに接続する「リモート接続」です。スマホ上で動くのはDSHエンジンであり、モデルへのリクエスト自体はユーザーが設定したモデルプロバイダーに送られ、そのアカウントで課金されます。DeepSeek公式とは関係のない非公式クライアントである点はREADMEで明確に述べられています。
+vue-llm は、Vue と Nuxt のアプリに LLM を使ったチャットや生成機能を組み込むためのライブラリです。README では「The AI SDK for Vue and Nuxt」と説明されています。中心となるのは useChat() という composable で、messages、input、handleSubmit、isLoading などのリアクティブな値と関数を返します。README によれば、ストリーミング、ツール呼び出し、マルチプロバイダー対応のチャットを約 10 行で書けます。ほかに useCompletion と useObject もあり、ドキュメントの構成を見るとテキスト補完や構造化出力にも使えるようです。公式ドキュメントのサイトには、API キーなしで試せるプレイグラウンドが用意されています。
 
 ### 主な機能
 
-チャット面では、モデル切り替え、画像送信、音声入力、ツール承認や質問への応答に対応し、生成途中での割り込み入力やキューに積んだメッセージの即時送信、完了したプロセスの1行への折りたたみができます。ネイティブUIと公式Web版をワンタップで切り替え可能です。そのほか、DSH Go向けのネイティブなツールカード・フォーム・パネルを提供するプラグインUI、回答の共有カード化と端末間暗号化された会話再生リンク、横画面・タブレット向けレイアウト、6種のテーマ色と壁紙連動、4種のアイコン、中国語と英語のUI切り替え、作業状況に応じて動くデスクトップペットなどがあります。
-
-### スマホ操作と安全設計
-
-権限を許可すると、本機エンジンが画面の読み取り、タップ、入力を行う「手机操控」機能が使えます。確認レベルは3段階から選べ、支払い、パスワード、認証コード、システム設定に関わる操作は常にユーザーに戻す設計です。ファイル一覧にはSafetyGate、SensitiveWords、ProtectedPagesといったクラスがあり、こうした保護処理を担っていると見られます。通常モードではアクセシビリティ権限を使い、邪魔をしない「不打扰模式」はAndroid 14以上に加えShizukuまたは自己接続ADBが必要です。画面テキストやスクリーンショットがモデルに送られうる点には注意が必要です。
+プロバイダーは createOpenAI、createAnthropic、createOllama、Google 向けの実装、それに WebGPU で動く createWebLLM が用意されています。ツール呼び出しは tools 定義と onToolCall で扱い、maxToolRoundtrips で往復回数の上限を設定できます。添付ファイルは画像、PDF、音声、テキストに対応します。プロバイダーごとの対応範囲は表にまとめられており、対応外の組み合わせはリクエスト送信前にエラーになります。永続化は createWebStorage（localStorage）、createMemoryStorage、または ChatStorage を実装した独自バックエンドで行います。さらに、型推論付きのプロンプトテンプレート（createPrompt、createChatPrompt、usePrompt）と、shadcn-vue 経由で追加できるチャット UI も提供されています。
 
 ### 仕組み・アーキテクチャ
 
-リポジトリはモノレポ構成です。app/にFlutterのUIとAndroid Kotlinのプラットフォーム実装があり、Kotlin側はruntime（ランタイムのインストール・プロセス管理・セーフモード）、phone（スマホ操作、McpServerを含む）、pet（オーバーレイ表示）、voice、notify、shareなど機能別にプラグイン化されています。packages/dsh_clientはDSH Web APIのDartクライアント、packages/dsh_remoteはDSH RemoteのDartクライアントです。runtime/ではLinuxランタイムのパッケージング、エンジンへのパッチ、アプリとのブリッジを扱います。ローカルエンジンは既定でPRoot互換起動で、開発者オプションで直接起動も選べます。さらにservices/、site/、infra/に共有サービスやWebサイト、デプロイ資料が含まれます。
+ソースコードは core、composables、providers、components に分かれています。core には sse-parser、stream-processor、partial-json、markdown、storage などが置かれています。メッセージは parts ベースの UIMessage 形式で、text、reasoning、tool-call、file、source といったパートを持ちます。tool-call パートは streaming、pending、running、result、error の状態を持ち、MessageParts コンポーネントで独自の Vue コンポーネントとして描画できます。プロバイダーには wrapProvider でミドルウェアを重ねられ、retryMiddleware（指数バックオフ、Retry-After 対応）や rateLimitMiddleware を適用できます。サーバー側では vue-llm/server の createLLMHandler でツール実行やクライアント単位のレート制限ができ、createSSEProvider で独自の SSE API にも接続できます。
+
+### 技術構成
+
+言語は TypeScript で、ビルドには Vite と vue-tsc を使っています。パッケージは ESM と CJS の両方で配布され、エクスポートは vue-llm、vue-llm/providers、vue-llm/components、vue-llm/server、vue-llm/devtools、vue-llm/nuxt に分かれています。peer dependency は vue（^2.7.0 または ^3.3.0）です。@mlc-ai/web-llm、@nuxt/kit、@vue/devtools-api は任意の peer dependency になっています。テストは Vitest と @vue/test-utils、jsdom を使い、Vue 2 向けの設定ファイル vitest.vue2.config.ts もあります。ドキュメントは VitePress で書かれ、英語、日本語、ロシア語、中国語、ポルトガル語、スペイン語に翻訳されています。Node.js 18 以上が必要です。
 
 ### 使い方・導入方法
 
-Android 8.0（API 26）以上が必要で、GitHub Releasesまたは公式サイトからAPKをダウンロードしてサイドロードします。一般的なスマホはarm64版、エミュレータやx86_64端末はx64版を使い、32bit ARM版はありません。初回起動時に本機へランタイムを入れるかリモートホストに接続するかを選び、モデルと認証情報を設定します。本機実行には約1GBの空きが必要です。ソースからビルドする場合はLinux x86_64上でtooling/setup-toolchain.shを実行し、source tooling/env.sh、bash runtime/build-runtime.sh arm64-v8a、DSH_BETA_TOKEN_FILE= bash tooling/build-apk.sh -f arm64 --keep-daemonの順に進めます。ツールチェーンはJDK 17、Flutter 3.47.7、Android SDK/NDKで、Dartは^3.13.5が要求されます。
+npm install vue-llm でインストールし、vue-llm/providers から createOpenAI などでプロバイダーを作ります。それを useChat に provider と model と一緒に渡せば使えます。Nuxt では nuxt.config.ts の modules に vue-llm/nuxt を追加し、runtimeConfig.vueLlm に openaiApiKey などを設定します。こうすると composable とプロバイダーのファクトリが自動インポートされます。ブラウザ内で推論する場合は @mlc-ai/web-llm を別途インストールし、CreateMLCEngine を createWebLLM に渡します。そのうえで Llama-3.2-1B-Instruct-q4f16_1-MLC のようなモデル ID を指定します。チャット UI は npx shadcn-vue add https://vue-llm.js.org/r/chat.json で自分のプロジェクトに追加できます。
 
 ### 注目ポイント・注意点
 
-DSH Remote接続時は画像添付のみ対応、アプリ内でWeb版を開けない、プラグイン管理はオン/オフのみ、DS Botや会話ログのエクスポート非対応など、接続方式によって機能差があります。匿名利用統計の送信が既定でオンなので、気になる場合は初回ガイドか設定の「隐私与分享」でオフにできます。署名の異なる旧テスト版からは上書きインストールできず、アンインストールすると会話やLinux環境が消えます。ライセンスはAGPL-3.0ですが、DSH Goの名称・ロゴやマスコットはライセンス対象外です（ASSETS.md参照）。現状はAndroidのみで、iOSやHarmonyOSへの対応は予定として言及されています。Google Play配布向けの構成ではありません。
+セキュリティ面では、ブラウザでプロバイダーを使うと既定でエラーになり、dangerouslyAllowBrowser: true を明示した場合だけ動きます。README はこれをプロトタイプ用途に限定しており、本番ではサーバー経由のプロキシか Nuxt の runtimeConfig を使うよう勧めています。添付ファイルは data URL として保存されるため、localStorage の約 5MB の上限を超えることがあります。サーバー側のレート制限はインスタンスごとのメモリ上で動くため、複数インスタンス構成では Redis などの共有リミッターが別途必要です。retryMiddleware が再送するのは最初のリクエストだけで、ストリーム開始後のエラーは再試行されません。なお、スター数はまだ少なく、実運用での採用実績は README からは不明です。
 
-- 技術構成: Dart, Flutter, Kotlin, Android SDK/NDK, JDK 17, Gradle, PRoot, Ubuntu, Node.js, Shizuku, ADB, Bash, Python 3
-- 向いている人: DeepSeek Harnessを使っていて、外出先でもスマホからエージェントを操作したい開発者や、PCを持ち歩かずにスマホ単体でコーディングエージェントを試したい人に向いています。FlutterとKotlinを組み合わせたAndroidアプリで、Linuxランタイムの同梱やアクセシビリティを使ったAI操作をどう実装しているかを学びたいエンジニア、DSH Go向けプラグインを作りたい人にも参考になります。
+- 技術構成: TypeScript, Vue 3 / Vue 2.7, Nuxt (@nuxt/kit), Vite, Vitest, @vue/test-utils, @mlc-ai/web-llm (WebGPU), @vue/devtools-api, VitePress, Tailwind CSS, shadcn-vue, ESLint
+- 向いている人: Vue や Nuxt で ChatGPT 風のチャットボットや AI 機能を作りたいフロントエンドエンジニアに向いています。複数の LLM プロバイダーを切り替えたい人、ツール呼び出しの結果を独自 UI で見せたい人にも適しています。サーバーを用意せずに WebGPU でブラウザ内推論を試したい学生や開発者にも使えます。Vercel AI SDK のような体験を Vue 環境で求める人にも合います。
 
-## 4. [qybaihe/bla](https://github.com/qybaihe/bla)（テーマ / ★1,088）
+## 4. [lf735/webllm](https://github.com/lf735/webllm)（テーマ / ★0）
 
-**AIリバースエンジニアリングエージェント（REA）からソフトウェアを守る防御専用シールドツール**
+**Gemma 4系モデルをブラウザ内(WebGPU)またはOllama経由でローカル実行するWebチャットUI**
 
-BLA（Blind LLM Agents）は、配布するバイナリやElectronアプリ、JSバンドル、Python、WebAssembly、SQLite、AIモデルなどを、REAのようなAIによるリバースエンジニアリング・エージェントから守るための防御ツールです。自作ソフトウェアを「ハードニング」することで、解析エージェントがリソース上限に達したり、おとり（デコイ）に誘導されてトークンを浪費したりする一方で、実行時の挙動は変わらないことを狙います。「Poison（汚染）→ Exhaust（枯渇）→ Hallucinate（幻覚）」という3段階が中心コンセプトで、MCPサーバーやコーディングエージェント連携として使えます。
+Gemma 4 Studioは、GoogleのGemma 4ファミリー(E2B、E4B、12B、26B MoEなど)を、クラウドにデータを送らずローカル環境で動かすためのWebインターフェースです。軽量モデルは@mlc-ai/web-llmを使ってブラウザ内のWebGPUで完結させ、大きなモデルはlocalhost:11434のOllama(またはLM Studio)に接続して実行する、2つのエンジンを切り替えられます。Thinking Modeの思考過程の可視化、画像入力、tok/sやTTFTのリアルタイム表示など、ローカルLLMの挙動を観察しやすい機能をそろえています。プライバシーを重視しつつ手軽にGemmaを試したい人向けの、Vite製の小規模フロントエンドです。
 
-- REAなどAI解析エージェントへの対抗を目的とした防御専用ツール
-- Poison・Exhaust・Hallucinateの3段階で解析を妨害
-- 実行時の挙動・バイナリ整合性・フォーマット妥当性は保つのが鉄則
-- 多数のフォーマット（ASAR/WASM/SQLite/モデル/EVM等）に対応
-- MCPサーバーとして各種コーディングエージェントに統合可能
-
-### 何をするものか
-
-BLAは「Counter-REA」を標榜する防御ツールで、配布用のビルド成果物に対して監査（audit）→保護（protect）→検証（verify）のパイプラインを実行します。npx bla-agents harden . と打つだけで dist/ や build/、.asar、.wasm、.sqlite、モデルファイルなどを自動検出し、ワンコマンドで保護を適用します。狙いは、AIリバースエンジニアリングエージェントが成果物を開いたときに解析予算を超過させ、おとりを追わせ、トークンを浪費させることで、解析コストを引き上げる点にあります。READMEでは防御目的・自社ソフトウェア限定での利用が明記されています。
-
-### 主な機能（3段階の防御）
-
-BLAの防御はPoison・Exhaust・Hallucinateの3層で構成されます。Poisonはフォーマット的に妥当なカナリアやハニー・メタデータ、おとりの制御フローを埋め込み、本物の証拠のように見せかけます。ExhaustはREAが文書化しているリソース上限（ヘッダーサイズ、ネスト深度、インターフェース数、PCAPのJSONサイズ、fuseセンチネルなど）を超えるよう成果物を膨張させます。Hallucinateは解析器に不完全なインベントリやあいまいな迷路を残します。加えてElectron V1 fuseハードニングや、CDP/Frida/inspector検出時に合成テレメトリを返すランタイムガードも備えます。
-
-### 対応フォーマットと実証結果
-
-対応フォーマットは幅広く、JavaScript/TypeScript、Electron .asar と fuses、WASM、Python/.pyc、SQLite、Safetensors、GGUF、Go buildinfo、Flutter/Dart pool、Erlang BEAM、EVM+Solidityメタ、PCAP、NVIDIA PTX、DEX/IL2CPP/bplist/.NET/JVM/ZIPなどが挙げられています。READMEでは、実際にREAを走らせて（npm run redteam:rea）得たbefore→afterの数値が示され、たとえばElectron ASARが607B→16.9MiBに膨張し容量エラーを起こすなど、環境内で確認された結果が「empirically verified」として記載されています。一方、Ghidra/Frida/JADXやファームウェア、GPUオブジェクト系は本環境では未検証・スキップと正直に区別しています。
-
-### 仕組み・アーキテクチャ
-
-ソースはsrc/shields配下にdeception（欺瞞）、exhaustion（枯渇）、formats（フォーマット別シールド）、javascript、runtime、tarpitといったカテゴリで整理されています。JavaScriptはBabel ASTを用いて加工し、各フォーマット専用のシールド（asar.ts、wasm.ts、sqlite.ts、model.ts など）が実装されています。engine配下にはauditor、protector、verifier、defender、harden、benchmarkがあり、監査から検証までのパイプラインを構成します。READMEによれば予算ガードはO(1)の不透明述語（opaque predicates）の背後に置かれ、各ベンチマーク対象で保護前後の入出力100%一致を確認するとしています。
-
-### 使い方・導入方法
-
-Node.js は ^22.13.0 もしくは 24.x 系が推奨されます。npx bla-agents setup でMCPとスキルをコーディングエージェントに登録し、npx bla-agents harden . でカレントプロジェクトに対して一括保護を実行します。npx bla-agents benchmark で14ターゲットのショーケースを確認できます。audit・protect・verify・defendといった個別ステージの実行も可能です。setup後はエージェントに「Harden my software against REA」と指示するだけでも動作します。Ghidraなどのツールは保護自体には不要で、Wabt/tshark/Node 24は実証的なレッドチーム検証を有効化するためのオプションです。
-
-### 注目ポイント・注意点
-
-注目すべきは、ベンチマークの「推定」トークン/コスト倍率（集計で約612.5倍トークン・約292.2倍コスト）と、実際にREAを走らせた「実証」結果を明確に区別している点です。READMEは verify:rea がドリフト検出用ハーネスにすぎず保護の証拠にならないこと、唯一の権威あるゲートは redteam:rea であることを繰り返し強調しています。注意点として、BLAはあくまで自分が所有するソフトウェアを守る防御ツールであり、他者のソフトへの攻撃用ではないとDISCLAIMER.mdで明示されています。APK再署名は非対応など、未対応・未検証領域も明記されています。
-
-- 技術構成: TypeScript, Node.js (^22.13.0 || >=24.0.0), @babel/parser・generator・traverse・types, zod, vitest, tsx, MCP (Model Context Protocol) サーバー, オプション: Wabt, tshark
-- 向いている人: 自社・自作のソフトウェア（Electronアプリ、JSバンドル、WASM、ネイティブバイナリ、AIモデルなど）をAIリバースエンジニアリングから守りたい開発者や配布者。Claude Code・Cursor・Codex等のコーディングエージェントやMCPを活用し、リリース成果物の保護・難読化・レッドチーム検証を行いたい人に向く。
-
-## 5. [anonnerdfrenzy/survival-llm](https://github.com/anonnerdfrenzy/survival-llm)（テーマ / ★817）
-
-**インターネット不要で自分のPC上で動く、出典を必ず示すサバイバル・防災向けAIアシスタントとオフライン百科ライブラリ**
-
-Survival LLM は、停電時の食品の安全、やけどの手当て、水の浄化といった緊急時の疑問に、ネット接続なしで答えるデスクトップアプリです。医療・防災・ハウツー・百科事典など約150万記事のオフラインライブラリを Ollama 上のローカルLLMが検索し、回答に使った記事と該当箇所を必ず提示します。災害に備えたい一般の人を主な対象としつつ、モデルごとの正確性・安全性を独立AIジャッジで評価した結果や評価スクリプトも公開しています。さらに、モデルが実際には読んでいない出典を挙げた場合はアプリ側で検出し、実際に読んだ記事の一覧に置き換える仕組みを備えている点が特徴です。
-
-- 質問も資料もPC内で完結し、セットアップ後は完全オフラインで動作する
-- すべての回答に出典記事と引用箇所を表示し、架空の出典はアプリ側で差し替える
-- Wikipedia、WikiMed、CDC、FEMA、米軍マニュアルなど約150万記事を収録
-- PCのメモリ量に応じてNemotron、Qwen、Graniteなどのモデルを自動で提案
-- Ollama・pywebview・pypdf・truststore以外はPython標準ライブラリのみで構成
+- WebGPU内蔵実行とOllama接続の2エンジンを選択可能
+- Gemma 4の<thought>タグを折りたたみ表示で可視化
+- tok/s・TTFT・トークン数をHUDでリアルタイム表示
+- 会話履歴はlocalStorageに保存、Markdown出力も可
+- npm install と npm run dev だけで起動できる構成
 
 ### 何をするものか
 
-Survival LLM は、自分のコンピュータ上で動く無料のAIアシスタントと、サバイバル用のオフライン百科ライブラリをまとめたアプリです。停電・災害・応急処置といった場面での質問に対し、ローカルに保存された医療、緊急対応、ハウツー、百科事典の記事を検索し、その内容をもとに回答します。回答ごとに参照した記事が一覧表示され、クリックすると該当箇所がハイライトされた状態で、ライセンス情報とともに原文を確認できます。セットアップはインターネットがあるうちに行う必要がありますが、その後はネット接続なしで動作し、質問内容が外部に送られることはありません。ライブラリには Wikipedia のよく読まれる約93万記事のほか、WikiMed、MedlinePlus、WikEM、Ready.gov、CDC、FEMA や米軍のサバイバル・応急処置マニュアル、USDA の缶詰ガイド、wikiHow、iFixit、Appropedia などが含まれます。
+Gemma 4 Studioは、Google Gemma 4系のモデルを自分のマシン上で動かし、チャット形式で対話するためのWebアプリです。README はフランス語で書かれており、データを一切クラウドに送らない「ローカルかつプライベートなAI」をうたっています。対象モデルとしてEdge向けのE2B、E4B、12B、26B MoE、31B、さらにGemma 2 2Bが挙げられています。ブラウザだけで完結する軽量モデル実行と、ローカルサーバーに処理を任せる大規模モデル実行の両方を一つのUIから扱える点が特徴です。なお説明文やライセンスはリポジトリ上で明記されておらず、package.json には ISC と記載されていますが正式なライセンスファイルは見当たりません。
+
+### 2つの実行エンジン
+
+1つ目は WebGPU (In-Browser) モードで、@mlc-ai/web-llm を用いて Gemma 4 E2B や Gemma 2 2B のような超軽量モデルを100%ブラウザ内で実行します。Chrome、Edge、Firefox Nightly など WebGPU 対応ブラウザが必要です。2つ目は Ollama モードで、localhost:11434 の REST API とストリーミングを利用し、E4B、12B、26B MoE、31B といった大きめのモデルを CUDA、Metal、Vulkan によるアクセラレーションで動かします。README では LM Studio も選択肢として挙げられていますが、LM Studio との具体的な接続方法は README からは不明です。
 
 ### 主な機能
 
-主な機能は次のとおりです。まず推論の可視化で、回答の下にある Show reasoning を開くと、モデルの思考過程や途中の検索、読んだ記事を確認できます。推論トークン量は Off、1,000、4,000、16,000、無制限から選べます。次にカスタマイズ機能で、Instructions ボタンからシステムプロンプトを編集でき、回答の長さ制限も変更できます。Your files には PDF、Word、EPUB、Webページ、テキストファイルを追加でき、発電機のマニュアルや家族の避難計画などもライブラリと一緒に検索対象になります。ただし、スキャン画像や写真は現時点では読み込めません。Memory 機能は、家族のアレルギーや所有している機材などを短いメモとして保存し、以降のチャットで参照します。保存されたメモは一覧で編集でき、Undo やAIによる保存のオフにも対応しています。このほか、日次の更新チェックと自動アップデートの機能もあります。
+Thinking Mode ビジュアライザーは、Gemma 4 が出力する <thought> タグをストリーミング中に検出し、タイマーと思考トークン数付きのアニメーション付きアコーディオンで表示します。マルチモーダル対応として、画像のドラッグ&ドロップや添付による視覚解析が可能です。HUD では tok/s、最初のトークンまでの時間(TTFT、ミリ秒)、総トークン数を表示します。そのほか、localStorage への会話自動保存と複数セッション管理、ワンクリック削除、思考過程を含む .md 形式でのエクスポート、コピーボタン付きコードブロック、Temperature・Top-P・Max Tokens の調整、Codeur・Raisonneur・Synthétique・Polyvalent といったシステムプロンプトのプリセットを備えています。
 
-### 仕組み・アーキテクチャ
+### 仕組み・技術構成
 
-質問はまずローカルモデル（Ollama）に渡され、モデルが search_library、read_article、show_article というツールを呼び出してライブラリを参照します。app/server.py はチャット画面を 127.0.0.1 でのみ配信し、各ターンの処理を core.py に任せます。core.py は回答のストリーミングとツール実行を担当します。library/search.py は index.sqlite に対して SQLite FTS5 による BM25 検索を行い、約1,500文字単位のパッセージを返します。その際、公式ソースは上位に来るよう調整されています。本文はプレーンテキストの Markdown シャードとして保存されています。memory.py は、人物に関する会話の後にモデルへ短い追加ターンを与え、JSON形式で記憶の追加・変更・削除を判断させます。library/myfiles.py はユーザーのファイル用に独立したインデックスを作ります。また、モデルが最後に書く Sources: 行を実際に開いた記事や検索結果と照合し、それ以外の出典が含まれていれば、実際に読んだ記事の一覧に置き換えます。
-
-### 技術構成とモデル選択
-
-実装は Python で、外部依存は Ollama、ウィンドウ表示用の pywebview、PDF読み取り用の pypdf、システムの証明書ストアを使う truststore に限られます。それ以外は標準ライブラリで書かれています。フロントエンドは app/static 配下の HTML、CSS、JS です。ライブラリの構築には libzim、lxml、trafilatura と、PDF処理用の pdftotext（poppler）を使います。モデルはメモリ量に応じて提案されます。128GB以上のMacには Nemotron 3.5 Super（80GB）、32〜96GBのMacには Qwen3.8 27B、32GB以上のWindowsには Nemotron 3.5 Lightning、16〜31GBのPCには Granite 4.2 8B が割り当てられます。16GB機向けの高速な選択肢として Gemma 4 E4B も用意されています。8GB機は、安全に推奨できるモデルがなかったため、ライブラリ検索のみの利用となります。
+ファイル構成は index.html、style.css、src/main.js、vite.config.js というシンプルなもので、フレームワークを使わない素の JavaScript で書かれていると見られます。ビルドツールは Vite(devDependencies で ^8.3.5)、ランタイム依存は @mlc-ai/web-llm(^0.2.86)のみです。開発サーバーは vite --host 0.0.0.0 --port 5173 で起動するため、LAN 内の他端末からもアクセスできる設定になっています。Ollama との通信はブラウザから直接 HTTP API を呼ぶ構成のため、Ollama 側で CORS を許可する必要があります。Markdown のレンダリングやシンタックスハイライトにどのライブラリを使っているかは、依存関係に記載がなく README からは不明です。
 
 ### 使い方・導入方法
 
-Mac（Apple Silicon、macOS 14以降）では Survival-LLM-mac.zip を、Windows 10/11 の64bit版では Survival-LLM-windows.zip を展開して起動します。初回起動時は、未署名アプリとしての警告を許可する操作が必要です。起動後は画面の案内に従い、AIエンジン（Windowsでは Ollama 1.6GB をダウンロード）、AIモデル、ライブラリを選びます。ライブラリは Everything（8.8GB）と Essentials（1.3GB、Wikipedia と iFixit を除く）から選べます。所要時間は20分から2時間半程度です。ソースから動かす場合は python3 app/server.py を実行し、ブラウザで使うなら --browser を付けます。ターミナルからは python3 chat.py で質問できます。テストは python3 tests/run_all.py で実行でき、ライブラリの構築手順は library/fetch_zims.py と build_library.py で示されています。
+リポジトリのフォルダで npm install と npm run dev を実行すると、http://localhost:5173 で UI が開きます。WebGPU モードならこれだけで試せます。Ollama を使う場合は、OLLAMA_ORIGINS="*" ollama serve のように CORS を許可した状態でサーバーを起動し、ollama run gemma4:latest などでモデルを取得します。VRAM に応じて gemma4:e2b、gemma4:e4b、gemma4:12b、gemma2:2b といったバリアントも選べます。UI で Ollama タブを選ぶとインストール済みモデルが自動検出され、設定メニュー(⚙️)から接続テストも行えます。
 
 ### 注目ポイント・注意点
 
-評価の透明性が際立っています。22問の停電・応急処置の質問について、正確性、安全性、懐疑的な再チェックという3者のAIジャッジによるブラインド評価を行い、結果と評価スクリプトを evals/ に公開しています。Nemotron 3.5 Super は正答率86%で有害回答0件でした。一方、Granite 4.2 3B は致命的になり得る誤答があったため、提供対象から外されています。ただし評価は Wikipedia 追加前の旧ライブラリで実施されたもので、配布版の品質を保証するものではないと明記されています。そのほかの注意点として、最大モデルは80GBあり、フルライブラリのインストールには一時的に約27GBの空き容量が必要です。また、自分用のデフォルトビルドには再配布できない素材が含まれます。ライセンス表記は NOASSERTION ですが、README ではコードは MIT、ライブラリの内容は各ソースのライセンスに従うとされています。AIは誤りを含み得るため、表示される出典で内容を確認することが前提です。
+ブラウザ内推論とローカルサーバー推論を同じUIで比較でき、TTFT や tok/s を確認できるため、ローカルLLMの性能検証や学習用途に便利です。一方で、スター・フォークともに0の個人リポジトリで、ライセンスの正式表記も不明なため、再利用時は注意が必要です。OLLAMA_ORIGINS="*" はすべてのオリジンからのアクセスを許可する設定であり、開発サーバーも 0.0.0.0 で公開されるため、共有ネットワーク上では公開範囲に気を付けるべきです。また、README に記載された Gemma 4 の各モデル名が web-llm や Ollama 側で実際に提供されているかどうかは、README からは確認できません。
 
-- 技術構成: Python, Ollama, pywebview, pypdf, truststore, SQLite FTS5, libzim, lxml, trafilatura, poppler (pdftotext), HTML/CSS/JavaScript, C (packaging/launcher.c)
-- 向いている人: 停電や災害に備え、ネットが使えない状況でも医療・防災情報を引ける環境を手元に置きたい一般の人やプレッパー層に向いています。開発者にとっては、プライバシーを重視したローカルRAGアプリの実装例として参考になります。LLMの安全性・出典捏造の評価方法に関心がある研究者や学生にも、公開された評価スクリプトと結果が役立ちます。
+- 技術構成: JavaScript, Vite, @mlc-ai/web-llm, WebGPU, Ollama REST API, HTML/CSS, localStorage
+- 向いている人: クラウドにデータを送らずに Gemma 系モデルを試したい開発者や学生、WebGPU によるブラウザ内LLM推論に興味がある人、Ollama 用の軽量なチャットUIを探している人に向いています。tok/s や TTFT の可視化があるため、ローカル環境でのモデル性能比較や、Thinking Mode の挙動観察といった検証・学習用途にも適しています。
 
-## 6. [unclebob/ub-mode](https://github.com/unclebob/ub-mode)（総合 / ★5,052）
+## 5. [Kita12123/webllm-poc](https://github.com/Kita12123/webllm-poc)（テーマ / ★0）
 
-**AIコーディングエージェントに規律あるソフトウェア工学原則を守らせるためのスキル定義（SKILL.md）**
+**ブラウザ内でLLMを動かすWebLLM（@mlc-ai/web-llm）を試すための、TypeScript製の個人検証用ミニマムデモ**
 
-ub-mode は、AIエージェントがコードを書いたり変更したりする際に、TDD や根本原因の修正、小さなコミットといった規律ある開発原則を強制するためのエージェントスキルです。@poteto 氏のルール（poteto-mode / pstack）の一部を土台に内容を絞り込み、crapper・dryer・mutator といった決定的な品質ゲートツールと組み合わせている点が特徴です。「まず動かす」「次に正しくする」「実践」の3段階で原則が整理されています。Claude、Cursor、Grok などのエージェントでスキルを使い、AI生成コードの品質を一定に保ちたい開発者向けです。
+このリポジトリは、ブラウザ上でLLMを実行するライブラリ @mlc-ai/web-llm を、Webアプリの形で動かしてみるための検証プロジェクトです。README のタイトルは「WebLLM Conversation Orchestrator App」で、WebLLM API の最小限のデモと説明されています。src に agent.ts と engine.ts があることから、エンジン部分とエージェント（会話制御）部分を分けた構成と考えられますが、具体的な実装内容は README からは不明です。Parcel でビルド・起動する手軽な構成なので、WebLLM を触り始める際の参考になります。
 
-- AIエージェント向けのスキルで、SKILL.md を配置して /ub-mode で呼び出す
-- Make it Work → Make it Right → Practice の3段階で原則を構成
-- CRAP < 10、重複度 < 0.8 など数値基準の品質ゲートを採用
-- crapper・dryer・mutator など同作者の補助ツールと連携する
-- リポジトリは README.md と SKILL.md の2ファイルのみで構成
+- @mlc-ai/web-llm を使ったブラウザ内LLMの検証用デモ
+- npm install と npm start だけで起動できる
+- Parcel 2 でバンドルし、開発サーバーはポート8888を使用
+- agent.ts と engine.ts に役割を分けたファイル構成
+- スター0の個人PoCで、ライセンスは不明
 
 ### 何をするものか
 
-ub-mode は、AIコーディングエージェントにソフトウェア工学の規律を守らせるための「エージェントスキル」です。コードの作成や変更のたびに、テスト駆動開発、ドメインのモデリング、根本原因の修正、小さく順序立てたコミットといった原則に従うよう、エージェントの振る舞いを方向付けます。README によれば、@poteto 氏のルール（poteto-mode / pstack）の一部をもとに内容を絞り込み、決定的な品質ゲートツールと組み合わせたものです。ルールを文章で示すだけでなく、計測ツールの数値で品質を確認する前提になっている点が特徴です。
+WebLLM の検証プロジェクトです。README では「WebLLM Conversation Orchestrator App」と名付けられ、WebLLM API を Webアプリの環境で動かす最小限のデモと説明されています。WebLLM は MLC AI が提供するライブラリで、サーバーを用意せずブラウザ上で言語モデルを動かすためのものです。名前の Conversation Orchestrator から、会話の流れを制御する仕組みを試していると読み取れます。ただし、どのモデルを使い、どんな対話をするのかといった具体的な内容は README からは不明です。
+
+### 仕組み・アーキテクチャ
+
+ソースはすべて src ディレクトリにあり、index.html、index.css、index.ts、engine.ts、agent.ts の5ファイルで構成されています。ファイル名から考えると、index.html と index.css が画面、index.ts がエントリーポイントです。engine.ts は WebLLM エンジンの初期化や推論呼び出し、agent.ts は会話を進めるエージェント的なロジックを担当していると推測されます。ただし、これはあくまでファイル名からの推測であり、実際の処理内容やモジュール間の関係は README からは不明です。
+
+### 技術構成
+
+主要言語は TypeScript（devDependencies では ^4.9.5）です。ランタイムの依存は @mlc-ai/web-llm ^0.2.85 のみという、非常にシンプルな構成です。バンドラには Parcel ^2.8.3 を使っています。buffer、process、url といった Node.js 向けモジュールのブラウザ用ポリフィルも devDependencies に入っています。tslib も含まれています。package.json の name が get-started になっていることから、WebLLM 公式の入門サンプルを元にしている可能性があります。
+
+### 使い方・導入方法
+
+README に従い、リポジトリのフォルダで npm install を実行してから npm start を実行します。npm start は「parcel src/index.html --port 8888」を呼び出すので、ブラウザで localhost:8888 を開くとアプリを確認できると考えられます。本番用のビルドは npm run build で行い、成果物は lib ディレクトリに出力されます。なお、WebLLM は WebGPU を前提としたライブラリです。そのため、対応ブラウザや GPU 環境が必要になる点に注意してください。具体的な動作要件は README からは不明です。
+
+### 注目ポイント・注意点
+
+依存関係が最小限なので、WebLLM をブラウザアプリに組み込む流れをつかむ教材として扱いやすい点が魅力です。エンジンとエージェントを分けた構成は、会話制御を自分で拡張したいときの出発点になり得ます。一方で、README はセットアップ手順だけの簡素な内容です。機能説明、対応モデル、スクリーンショットなどはありません。ライセンスも明記されていないため、コードを流用する場合は作者に確認するのが無難です。スター・フォークともに0の個人用PoCである点も踏まえて参照してください。
+
+- 技術構成: TypeScript, @mlc-ai/web-llm, Parcel, HTML, CSS, Node.js / npm
+- 向いている人: ブラウザ内でLLMを動かす WebLLM を初めて試したいフロントエンドエンジニアや学生に向いています。TypeScript と Parcel で作られた最小構成のサンプルを見ながら、会話エージェント的な仕組みを検証・拡張したい人の参考になります。
+
+## 6. [unclebob/ub-mode](https://github.com/unclebob/ub-mode)（総合 / ★5,056）
+
+**AIコーディングエージェントに規律あるソフトウェア工学の原則を守らせるためのスキル定義ファイル（SKILL.md）**
+
+ub-mode は、AIエージェントがコードを書いたり変更したりする際に、TDD やリファクタリングなどの規律あるエンジニアリング原則を強制するためのエージェントスキルです。@poteto 氏のルール（poteto-mode / pstack）の一部をベースに内容を絞り込み、Crapper・Dryer・Mutator といった決定的な品質ゲートツールと組み合わせている点が特徴です。「まず動かす」「次に正しくする」「実践」の三段階で原則が整理されており、Claude や Cursor、Grok などのエージェントのスキルディレクトリに置くだけで使えます。
+
+- AIエージェント向けのスキル定義で、実体は SKILL.md の1ファイル
+- First Make it Work / Then Make it Right / Practice の三段構成
+- CRAP < 10、重複度 < 0.8 など数値基準で品質を判定
+- Crapper・Dryer・Mutator など姉妹ツールとの併用が前提
+- スキルディレクトリにコピーして /ub-mode で起動
+
+### 何をするものか
+
+ub-mode は、AIコーディングエージェントにソフトウェア開発の規律を守らせるための「スキル」です。エージェントがコードを書く・変更する場面で、思いつきの実装や場当たり的な修正をさせず、設計原則やテスト駆動開発に沿って作業させることを目的としています。README によると、@poteto 氏のルール群（poteto-mode / pstack）の一部を土台にして内容を絞り込み、さらに決定的に結果が出る品質ゲートツールと組み合わせて構成されています。リポジトリには README.md と SKILL.md の2ファイルしかなく、プログラムではなく、エージェントへの指示文書として提供されている点を押さえておくとよいでしょう。
 
 ### 主な原則の構成
 
-原則は3段階に分かれています。1つ目の First Make it Work には、Laziness Protocol、Foundational Thinking、TDD、Redesign From First Principles、Attack the Premise、Subtract Before You Add、Outcome-Oriented Execution、Build the Lever、そして Architecture（Model the Domain、Boundary Discipline、Type System Discipline、Make Operations Idempotent、Separate Before Serializing Shared State）が含まれます。2つ目の Then Make it Right には、Fix Root Causes、Sequence Work into Verifiable Units、Test Behavior (Not Implementation)、Crapper、Dryer、Mutator、Refactoring があります。3つ目の Practice は、Keep a Log、Guard the Context Window、Worktree Cleanup、Commit and Push です。
+原則は三段階に分かれています。1つ目の First Make it Work では、Laziness Protocol、Foundational Thinking、TDD、Redesign From First Principles、Attack the Premise、Subtract Before You Add、Outcome-Oriented Execution、Build the Lever、そして Architecture（Model the Domain、Boundary Discipline、Type System Discipline、Make Operations Idempotent、Separate Before Serializing Shared State）が挙げられています。2つ目の Then Make it Right では、Fix Root Causes、Sequence Work into Verifiable Units、Test Behavior (Not Implementation)、各種ツールによる品質基準、Refactoring が並びます。3つ目の Practice では、Keep a Log、Guard the Context Window、Worktree Cleanup、小さく順序立てたコミットとプッシュが求められます。各原則の具体的な文言は SKILL.md に書かれていると考えられますが、README からは詳細は不明です。
 
-### 仕組み・連携ツール
+### 品質ゲートツールとの連携
 
-ub-mode 本体は SKILL.md というスキル定義ファイルで、品質の計測は同作者の別リポジトリのツールが担います。unclebob/crapper は関数ごとに循環的複雑度、テストカバレッジ、CRAP スコアを算出し、すべての関数を CRAP < 10 に保ちます。unclebob/dryer は構造的なコード重複を検出し、類似度 0.8 以上の重複ブロックをなくします。unclebob/mutator はミューテーションテストを実行し、テストで覆われていないコードや生き残ったミュータントを洗い出します。unclebob/uml-viewer は、コンポーネント、カバレッジ、CRAP、ミューテーションスコア、依存方向を可視化します。各ツールの対応言語や詳細な使い方は README からは不明です。
+ub-mode の大きな特徴は、品質の判断をエージェントの主観に任せず、決定的なツールの数値で判定する点です。unclebob/crapper は関数ごとに循環的複雑度、テストカバレッジ、CRAP スコアを計算し、すべての関数が CRAP < 10 に収まることを求めます。unclebob/dryer は構造的なコード重複を検出し、類似度 0.8 以上の重複ブロックをなくすよう促します。unclebob/mutator はミューテーションテストを実行し、カバーされていないコードやテストで検出できない生存ミュータントを洗い出します。README では、カバーされていない箇所をテストで埋める、生存ミュータントを潰す、デッドコードを削除する、という対応が示されています。さらに unclebob/uml-viewer では、コンポーネント、カバレッジ、CRAP、ミューテーションスコア、依存方向を可視化できます。
 
 ### 使い方・導入方法
 
-導入は、SKILL.md をエージェントのスキルディレクトリに ub-mode/SKILL.md としてコピーするだけです。配置先の例として、~/.grok/skills/ub-mode/SKILL.md、~/.claude/skills/ub-mode/SKILL.md、~/.cursor/skills/ub-mode/SKILL.md が挙げられています。配置後、エージェント上で /ub-mode を呼び出して使います。品質ゲートを実際に機能させるには、crapper、dryer、mutator などの補助ツールも別途用意する必要があると考えられますが、それらのインストール手順は README には書かれていません。
+導入はとても簡単です。SKILL.md を、使っているエージェントのスキルディレクトリに ub-mode/SKILL.md として置きます。例として ~/.grok/skills/ub-mode/SKILL.md、~/.claude/skills/ub-mode/SKILL.md、~/.cursor/skills/ub-mode/SKILL.md が挙げられています。配置したら、エージェント上で /ub-mode と入力して呼び出します。ただし、品質ゲートを実際に機能させるには、crapper、dryer、mutator といった姉妹ツールも別途用意する必要があると考えられます。それらのインストール方法や、どの言語に対応しているかは、この README からは不明です。各ツールのリポジトリで確認してください。
 
 ### 注目ポイント・注意点
 
-『Clean Code』で知られる Uncle Bob（unclebob）のアカウントによるリポジトリで、スター数は5000を超えています。AIに任せると崩れがちなコード品質を、CRAP スコアや重複度、ミューテーションテストといった客観的な指標で縛るアプローチが注目点です。Guard the Context Window や Worktree Cleanup のように、エージェント運用ならではの原則が含まれている点も興味深いところです。一方で、ライセンスは明記されておらず、主要言語も不明です。各原則の具体的な内容は SKILL.md に書かれていると思われますが、今回の資料には本文が含まれていないため、詳細は README からは不明です。
+Clean Code などで知られる unclebob のアカウントで公開されており、多くのスターを集めています。テストや設計の規律を言葉で指示するだけでなく、CRAP スコアや重複度、ミューテーションテストといった客観的な指標と組み合わせている点が新しいところです。AIが生成するコードの品質を数値で管理したいチームにとって、参考になる設計といえます。一方で、ライセンスは明記されておらず、利用や改変の条件は README からは不明です。また、実体は Markdown のスキル文書なので、効果はエージェントがどこまで指示に従うかに左右されます。対応言語やツールの実行環境も README からは不明です。
 
-- 技術構成: Markdown（SKILL.md によるエージェントスキル定義）, Claude / Cursor / Grok のエージェントスキル機構, unclebob/crapper, unclebob/dryer, unclebob/mutator, unclebob/uml-viewer
-- 向いている人: Claude Code、Cursor、Grok などのAIコーディングエージェントを日常的に使い、生成コードの品質（テスト、複雑度、重複）を規律で担保したい開発者に向いています。TDD やリファクタリングといった Uncle Bob 流の開発原則を、エージェント運用にどう落とし込むかを学びたいエンジニアや学生にも参考になります。
+- 技術構成: Markdown（SKILL.md によるエージェントスキル定義）, unclebob/crapper, unclebob/dryer, unclebob/mutator, unclebob/uml-viewer, Claude / Cursor / Grok などのエージェントのスキル機構
+- 向いている人: Claude Code、Cursor、Grok などのAIコーディングエージェントを日常的に使っていて、生成されるコードの品質（テスト駆動、低複雑度、重複排除、ミューテーションテストによる検証）を規律として担保したい開発者やチームに向いています。AIに任せるとコードの質が落ちることに悩んでいる人や、ソフトウェア工学の原則をエージェント運用に落とし込む実例を学びたいエンジニア・学生にも参考になります。
 
-## 7. [rddmwmddr/android-ad-cleaner](https://github.com/rddmwmddr/android-ad-cleaner)（総合 / ★4,901）
+## 7. [rddmwmddr/android-ad-cleaner](https://github.com/rddmwmddr/android-ad-cleaner)（総合 / ★4,902）
 
-**中国メーカー製Androidスマホのシステム広告・ホット検索・営業通知を、root不要かつ元に戻せる形でまとめてオフにするツール**
+**中国メーカー製Androidスマホのシステム広告・ホット検索・ニュース推薦・営銷通知を、root不要かつ元に戻せる形でオフにするツール群**
 
-OPPO/OnePlus（ColorOS）、小米・Redmi（HyperOS）、vivo（OriginOS）、Honor（MagicOS）など中国メーカー製Android端末には、システム広告やホット検索、ニュース推薦、マーケティング通知が多数組み込まれています。本リポジトリは、それらをadb経由でroot化・アンロック・ROM書き換えなしにオフにするためのツール群です。端末ごとの操作手順を「機種スクリプト」として記述し、uiautomator2で設定画面を自動操作する点が特徴です。AIエージェントに任せる方法、チャットAIに手順を教わる方法、手動チェックリスト、ノーコードのデスクトップクライアントという4通りの使い方が用意されています。
+OPPO/ColorOS、小米/HyperOS、vivo/OriginOS、荣耀/MagicOSなど中国国内向けAndroid端末に組み込まれた広告や推薦、マーケティング通知を、adb経由でシステムやアプリ標準の設定スイッチを操作して止めるプロジェクトです。rootや解锁、刷机は不要で、システム更新にも影響しない点を重視しています。使い方はAIエージェントに実行させる方法、チャットAIに手順を案内させる方法、手動チェックリスト、Mac/Windows向けデスクトップクライアントの4通りがあります。機種ごとの「機型脚本」で設定画面を自動操作し、通知はチャネル単位で営銷系だけを切る細やかさが特徴です。
 
-- root・アンロック・ROM書き換え不要。システムとアプリが元々持つスイッチだけを操作する
-- 通知は「内容与营销」などチャネル単位でオフにし、注文・配送・更新通知は残す
-- 広告コンポーネントは pm suspend で停止。所有者の同意が必要で、コマンド1つで元に戻せる
-- AGENTS.md を読ませて、AIエージェントに一括実行させる使い方を想定している
-- Mac/Windows向けのGUIクライアントがあり、Pythonがなくても使える
+- root不要・アンロック不要で、変更は基本的に元に戻せる
+- pm uninstallやdisable-userは使わず、標準の設定スイッチのみ操作
+- uiautomator2で画面を読み、機種別スクリプトで自動操作
+- AIエージェント用のAGENTS.mdを用意し一括実行に対応
+- 営銷通知はチャネル単位で停止し、注文・配送通知などは残す
 
 ### 何をするものか
 
-中国メーカー製Androidのシステムに組み込まれた広告をオフにするツールです。対象は個人化広告、広告トラッキング（OAID）、プルダウン検索のホット検索ランキング、マイナス1画面のニュース、ブラウザの情報フィード、アプリストアのカルーセル・起動画面・フローティングキャンペーン、各アプリのマーケティング通知、クイックアプリ（インストール不要のミニプログラム）などです。一方で、検索、マイナス1画面のカード、ストアのインストールと更新、天気の警報、宅配通知といった実用的な機能は残す方針です。pm uninstall や pm disable-user によるアンインストール・無効化は行いません。systemパーティションの改変やモジュールの導入もしません。各アプリの利用規約を本人の代わりに同意することもなく、アカウント画面や電話番号画面のスクリーンショットも撮らないと明記されています。
+中国メーカー製Androidスマホのシステムに組み込まれた個性化広告、広告トラッキング(OAID)、ドロップダウン検索のホット検索、負一屏のニュース、ブラウザの情報フロー、アプリストアのカルーセルや起動広告、各アプリの「内容与营销」「活动优惠」通知などをオフにします。一方で検索機能、負一屏カード、ストアのインストール・更新、天気警報、宅配通知は残す方針です。広告コンポーネント(com.opos.ads、com.miui.systemAdSolutionなど)はpm suspendで一時停止しますが、これは端末所有者の同意が必要で、1コマンドで還元できます。快应用(インストール不要のミニアプリ)の検出と無効化にも対応しています。
 
-### 主な機能と処理フロー
+### 主な機能と使い方の選択肢
 
-コマンドラインの入口は tool/run.py で、次のサブコマンドを順に実行します。devices で接続端末と対応する機種スクリプトの有無を確認し、check で読み取り専用の検査を行います。backup で変更前のスナップショットを取り、recipe で機種スクリプトを実行します。続いて chan-scan でマーケティング通知チャネルを一覧化し、chan-off でそれらをオフにします。quickapp はクイックアプリの検出と無効化、finish は後処理で、最後に dev-off --yes で開発者モードを解除します。復元方法は docs/05-還原.md にまとめられています。停止したパッケージと通知チャネルは、それぞれコマンド1つで元に戻せます。アプリ内のスイッチはチェックリストの手順に沿って手動で戻します。
+利用方法は4つあります。1つ目はClaude Code、Codex、Cursor、Trae、WorkBuddyなどコマンドを実行できるAIエージェントにリポジトリをクローンさせ、AGENTS.mdを読ませて実行する方法。2つ目はDeepSeek、豆包、ChatGPTなどのチャットAIに提示語を渡し、スマホ単体で手順を案内してもらう方法。3つ目はブランド別の手動チェックリストに従う方法。4つ目はMac(Apple芯片/Intel)とWindows 10/11向けのデスクトップクライアントで、接続、検出、選択、実行、完了の流れをGUIで操作でき、PythonやAIツールは不要です。クライアントには診断情報付きでGitHub Issueを送るフィードバック機能もあります。
 
 ### 仕組み・アーキテクチャ
 
-中核となる tool/fast.py は、uiautomator2 を使って画面を読み取り、設定項目の入口を探してスイッチを切り替えるエンジンです。機種ごとの手順は recipes/<ブランド>-<型番>/recipe.py に書かれています。内容は「どのアプリを開き、どの文字をたどって設定ページに入り、どのスイッチを切って、どれを残すか」です。設定画面は型番やシステムのバージョンによって変わるため、スクリプトは型番とバージョンごとに管理されます。バージョンが一致しない場合は警告を出し、入口が見つからない手順はスキップして誤操作を避けます。ほかに、通知チャネル処理の chan_fast.py と channel_policy.py、接続管理の adb_link.py、待機処理の wait.py、新機種調査用の実験的な explore.py などがあります。アプリ名の取得には Java 製の applabels.dex が使われています。
+総入口はtool/run.pyで、devices、check(読み取り専用チェック)、backup(変更前スナップショット)、recipe(機型脚本の実行)、chan-scan/chan-off(通知チャネル)、quickapp、finish、dev-offといったサブコマンドを持ちます。tool/fast.pyがuiautomator2で画面を読み、入口を探してスイッチを切り替えるエンジンです。recipes/<ブランド>-<型番>/recipe.pyに機種ごとの「どのアプリを開き、どの文字をタップし、どのスイッチを切るか」が記述されています。システムのバージョンが合わない場合は警告し、入口が見つからない手順はスキップして誤タップを避ける設計です。新機種探索用のexplore.py(実験的)もあります。
 
 ### 技術構成
 
-主要言語は Python で、requirements.txt で指定されている依存は uiautomator2==3.7.1 だけです。端末との接続は adb を前提としており、HDC を使う純正HarmonyOSには対応していません。デスクトップクライアントは gui/ 以下にあり、画面は pywebview、パッケージングは PyInstaller で作られています。Windowsインストーラーには installer.iss が使われているようです。Mac版は署名とAppleの公証を受けており、Apple Silicon版とIntel版が配布されています。tests/ には実機をつながずに動かせるエンジンの回帰テストが多数あります。GitHub Actions にはテストとWindowsビルドのワークフローが用意されています。
+主要言語はPythonで、requirements.txtの依存はuiautomator2==3.7.1のみです。端末との通信はadbを前提とし、HDCを使う原生鸿蒙(HarmonyOS NEXT)は未対応です。デスクトップクライアントはpywebviewによる画面(gui/web/index.html)とPyInstallerでのパッケージングで構成され、Windowsインストーラ用のinstaller.iss、Mac用のbuild_mac.shがあります。アプリ名取得用にJavaで書かれたapplabels.dexも含まれます。testsディレクトリには実機を接続しないエンジンの回帰テストが多数あり、GitHub Actionsでテストとwindowsビルドのワークフローが用意されています。
 
-### 使い方・導入方法
+### 導入方法
 
-使い方は4通りです。1つ目はAIエージェントに任せる方法で、PCとケーブル、コマンドを実行できるAIツール（Claude Code、Codex、Cursor、Trae、WorkBuddy など）を使います。READMEにある開始用の文面をコピーして渡すと、AIがリポジトリをクローンし、AGENTS.md を読んだうえで作業します。2つ目はスマホだけの場合で、DeepSeek、豆包、ChatGPT などのチャットAIに手順を案内してもらいます。3つ目はブランド別のチェックリストを見ながら手動でオフにする方法です。4つ目はデスクトップクライアントで、ケーブルを挿してボタンを押すだけで済み、Pythonは不要です。コマンドラインで使う場合は、pip3 install -r requirements.txt のあと python3 tool/run.py を実行します。事前にスマホ側で開発者モードとUSBデバッグを有効にしておく必要があります。
+コマンドで使う場合は、まずスマホで開発者モードとUSBデバッグを有効化します(docs/00に画像付き手順あり)。その後 pip3 install -r requirements.txt を実行し、python3 tool/run.py devices でシリアル番号と機型脚本の有無を確認、-s <序列号> を付けてcheck、backup、recipe、chan-scan、chan-off、quickapp、finishの順に進め、最後にdev-off --yesで開発者モードを閉じます。GUIを使う場合はReleasesからdmg、setup.exe、portable.zipを入手します。Mac版は署名・公証済み、Windows版はSmartScreenの警告が出る場合があると説明されています。還元方法はdocs/05-還原.mdにまとめられています。
 
 ### 注目ポイント・注意点
 
-対応機種表には、Honor、OnePlus、OPPO、小米、Redmi、vivo/iQOO など20機種以上が並んでいます。ただし状態は「実測で全工程通過」「経路のみ実測」「未対応」と機種ごとに異なります。同じブランドのスクリプトがあっても、その機種専用の対応とは限らないと明記されています。表にない機種は docs/04 に沿って自分でスクリプトを書き、PRを送ることが推奨されています。旧バージョンのクライアントは自動更新されないため、新しい版を手動でダウンロードし直す必要があります。利用前のバックアップが推奨されており、使用によって生じた問題は利用者の自己責任とされています。アプリの起動時広告（スプラッシュ広告）は .out-of-scope に置かれており、対象外と考えられます。
+実測済み機種は荣耀、一加、OPPO、小米、Redmi、vivo(iQOO含む)の二十数機種で、機種ごとに検証状況(実測通过、待复测など)が表で正直に示されています。同じブランドでもシステムの小バージョンで設定画面の名称や階層が変わるため、表にない機種はdocs/04の手順で脚本を書いてPRを送る形です。アプリのユーザー規約に代理で同意しない、アカウントや電話番号の画面をスクリーンショットしない、system分区を改変しないなど安全面の方針も明記されています。旧版は自動更新されません。利用による問題は自己責任と声明されています。ライセンスはMITです。
 
-- 技術構成: Python, uiautomator2, adb, pywebview, PyInstaller, Java（applabels.dex）, GitHub Actions
-- 向いている人: 中国メーカー製Android（ColorOS、HyperOS、OriginOS、MagicOS）のシステム広告や営業通知に悩んでいて、root化せずに安全かつ元に戻せる形で減らしたい人に向いています。コマンド操作に慣れていない人はデスクトップクライアントやチャットAIを、開発者はCLIやAIエージェントを使えます。新機種のスクリプトを書いて貢献したい人や、UI自動化・adbの実践例を学びたい人の参考にもなります。
+- 技術構成: Python, uiautomator2, adb, pywebview, PyInstaller, Java(applabels.dex), Inno Setup(installer.iss), GitHub Actions
+- 向いている人: OPPO、小米、vivo、荣耀、一加など中国国内版Android端末を使っていて、システム広告や推薦通知を安全かつ可逆的に減らしたい人。root化を避けたい一般ユーザーはデスクトップクライアント、AIエージェントによる端末自動操作やuiautomator2によるUI自動化に興味のあるエンジニア・学生には、ソースや機種別スクリプトの設計が参考になります。
 
-## 8. [JustAResearcher/gpu-unlock-ada](https://github.com/JustAResearcher/gpu-unlock-ada)（総合 / ★4,545）
+## 8. [JustAResearcher/gpu-unlock-ada](https://github.com/JustAResearcher/gpu-unlock-ada)（総合 / ★4,546）
 
-**RTX 4090 など Ada 世代 GeForce の FP32 累算テンソル演算を、NVIDIA ドライバ起動前に解放する Linux カーネルモジュール**
+**RTX 4090などAda世代GPUのFP32累積テンソル演算性能を約2倍に引き上げるLinuxカーネルモジュール**
 
-NVIDIA ドライバが GPU を初期化する前に SM の speed-select 設定を書き換え、RTX 4090 で FP16/BF16(FP32 累算)のテンソル命令スループットを約 2 倍に引き上げる Linux カーネルモジュールです。Zagitta/gpu-unlock の Linux モジュールとパッケージングに、TOTORONG/AD103_win_unlocker で公開された AD102 向けペイロードを統合したフォークです。NVIDIA のファームウェアは配布せず、ビルド時に各自のマシンで公式入力を取得・ハッシュ検証して生成します。改変していない純正 NVIDIA ドライバのまま動作する点と、カードごとに詳細な実測エビデンスを公開している点が特徴です。
+このリポジトリは、標準のNVIDIAドライバが起動する前にGPUのSM speed-select設定を書き換え、FP16/BF16のFP32累積テンソル演算スループットを解放するLinuxカーネルモジュールです。RTX 4090では命令レベルで約165 TF/sから約331 TF/sへの向上が報告されており、RTX 4070 Ti SUPERなど他のAda世代GPUも実験的に対応しています。改変版NVIDIAドライバやUEFIアプリは不要で、署名済みファームウェアと公開済みペイロードを使い、FLR後に無改変のドライバへ引き渡す点が特徴です。ファームウェアはユーザーのマシン上でNVIDIA公式配布物から生成する方式をとっており、バイナリは配布していません。
 
-- RTX 4090 で FP16/BF16→FP32 累算が約165→331 TF/s に向上
-- INT8・dp4a・スカラー FP32 は変化なし、実アプリの高速化は限定的
-- 純正 NVIDIA ドライバのまま、initramfs で先に動作する方式
-- 4070 Ti SUPER など多数の Ada GPU は個別フラグ付きの実験的対応
-- ファームウェアはローカル生成で SHA-256 検証、GPL-2.0-only
+- RTX 4090でFP16/BF16→FP32累積の命令スループットが約2倍
+- INT8・dp4a・スカラーFP32はほぼ変化なし
+- 実アプリでの効果は限定的で、cuBLAS GEMMでは形状により0〜34%程度
+- 他のAda GPUは個別のopt-inフラグとPCIアドレス指定が必要な実験扱い
+- 初回はコールドブート必須、NVIDIAファームウェアはローカル生成
 
 ### 何をするものか
 
-Ada 世代の GeForce GPU では、FP16 や BF16 の入力を FP32 で累算するテンソル演算が、ハードウェア上の上限より低い速度に設定されているとされます。このモジュールは、NVIDIA ドライバがカードを掴む前に署名済みファームウェアとペイロードを実行し、SS0 に 0x88888888、SS1 に 0x8 を書き込んで speed-select を上書きします。その後 PCIe の Function Level Reset(FLR)を行い、未改変の NVIDIA ドライバに引き渡します。RTX 4090 では命令レベルで約 2 倍(例 160.4→320.4 TF/s)が報告され、TF32 や FP8 も命令発行レートで約 2 倍になる測定があります。
-
-### 対応 GPU と実験的ターゲット
-
-RTX 4090(10de:2684, AD102)は自動で AD102 用ファームウェアとペイロードが選ばれます。上流から引き継いだ GA102/GA104/GA103/GA106 系の Ampere 対応も残っており、RTX 3050 6GB(GA107)の成功報告もあります。RTX 4090 D、4080 / 4080 SUPER、4070 系、4060 系、ノート PC 向け 4090/4060/4050 などは実験的扱いで、ID ごとに rtx4090d_experimental や ad103_experimental などのフラグが必要です。多くは正確な PCI アドレス指定も必須で、targets=all では選ばれません。検証は 1 枚〜数枚程度で、特にノート PC は機種ごとに挙動が異なると明記されています。
+Linux起動時、NVIDIAドライバがGPUを掴む前にカーネルモジュールgpu_unlockが動作し、GPUのSM speed-select（SS0とSS1）を上書きします。これにより、GeForceで制限されているFP32累積のテンソル演算レートが解除されます。RTX 4090（10de:2684, AD102）では、FP16→FP32累積が165.6から331.6 TF/s、BF16→FP32累積が165.5から330.6 TF/sに向上したと報告されています。設定はPCIe FLR（Function Level Reset）やNVIDIA 615.78.08ドライバの初期化を経ても維持されたとされています。元はZagitta/gpu-unlock（Ampere向け）のフォークで、TOTORONG/AD103_win_unlockerのAD102ペイロードを組み込んでいます。
 
 ### 仕組み・アーキテクチャ
 
-パッケージはモジュールとファームウェアを initramfs に組み込み、mkinitcpio、initramfs-tools、dracut 向けの設定で gpu_unlock を nvidia より先に読み込ませます。カーネルは読み込んだ各アセットを固定の SHA-256 と照合してから DMA を開始し、ペイロードの完了マーカーと権限を確認、FLR 前後で speed-select の読み出し値を検証します。WPR2 が残った初期化済みカードや既にバインド済みのカードはスキップします。ペイロードは公開されたデバッグ用 booter の解析から導いた命令アドレスを使い、製品版 booter は GPU 内で認証・復号されます。
+RTX 4090向けの処理では、まず署名済みファームウェアを実行し、ペイロードの完了マーカーと必要な権限を確認します。その後SS0に0x88888888、SS1に0x8を書き込み、FLRを行ってから無改変のNVIDIAドライバにバインドさせます。FLRの前後で、期待どおりの実効speed-select値が読み出せることも確認します。ペイロードは公開済みのdebug-booter解析から導いた命令アドレスを使用し、本番用booterはGPU内部で認証・復号されます。カーネル側はロードする各アセットをpin留めしたSHA-256で検証してから、カードの確保やファームウェアDMAを始めます。WPR2が既に初期化されているカードや、既にバインド済み・電源断状態のカードは処理をスキップします。
 
-### 技術構成
+### 対応ハードウェア
 
-本体は C で書かれた Linux カーネルモジュール(kernel/gpu_unlock)で、DKMS でビルドされ CONFIG_CRYPTO_LIB_SHA256 が必要です。Arch(makepkg)、Debian(dpkg-buildpackage)、RPM(rpmbuild)の各パッケージングを Makefile から扱えます。ビルド時に NVIDIA 610.43.03 のソースとバイナリを HTTPS で取得し、ハッシュ検証してファームウェアを生成します。診断用に読み取り専用の BAR0 サンプラ diagnostics/peek(C)と、CUDA の命令ベンチマーク・GEMM 検証 diagnostics/bench(CUDA、Python)が付属します。make test はモックによるホスト側テストです。
-
-### 使い方・導入方法
-
-git clone 後に make install を実行すると、ディストリビューションを判別してパッケージをビルド・インストールします。明示的に make install-arch、make install-deb、make install-rpm も使えます。カーネルヘッダと DKMS が必要です。導入後はカーネルコマンドラインに gpu_unlock.targets=0000:03:00.0 のように lspci -D で得た PCI アドレスを指定して有効化し、実験的ターゲットには対応フラグも付けます。初回は必ず電源を完全に切ってからのコールドブートが求められます。起動後は journalctl -k -b | grep gpu_unlock で「gpu_unlock: unlocked」と各チェックの結果を確認します。
-
-### 注目ポイント・注意点
-
-効果はテンソル命令の発行レートに関するもので、実際の cuBLAS GEMM では FP16 で 12〜34% 程度、形状によってはほぼ変化なしでした。量子化 MoE 推論では改善なしの報告もあり、電力上限下では消費電力が増えて頭打ちになる点も記されています。結果の多くは 1 枚のカード・少数回の起動に基づき、長期安定性は十分検証されていません。NVIDIA 起動後の手動ロードでは効果がなく、ファームウェアが停止しなかった場合は強制アンロードせず電源断が必要です。保証や規約面への影響は README からは不明なため、自己責任で慎重に扱うべきツールです。
-
-- 技術構成: C, Linux カーネルモジュール, DKMS, CUDA, Python, Makefile, mkinitcpio / initramfs-tools / dracut, Debian パッケージング, RPM パッケージング, NVIDIA 610.43.03 ファームウェア(ローカル生成)
-- 向いている人: RTX 4090 などの Ada 世代 GeForce を Linux で使い、FP16/BF16/TF32 の FP32 累算テンソル性能を検証したいハードウェア研究者や上級ユーザー向けです。カーネルモジュールや initramfs、ブートローダ設定を自分で扱え、検証不足のリスクを理解したうえで自分の GPU で実験できる人に向いています。一般的な AI 推論の高速化を手軽に求める用途には向きません。
-
-## 9. [interplains/Zero-Breach-Toolkit](https://github.com/interplains/Zero-Breach-Toolkit)（総合 / ★3,699）
-
-**Pegasus などの傭兵型スパイウェアの痕跡を、PC・Android・iPhone バックアップからオフラインで調べる Python 製ツール**
-
-Zero Breach Toolkit は、Pegasus、Predator、Graphite、Candiru など既知の傭兵型（mercenary）スパイウェアの痕跡を、Windows・macOS・Linux のコンピューターと、Android の収集データや iPhone のローカルバックアップから探す無料のオープンソースツールです。スキャンは読み取り専用で、スキャン中はネットワーク通信を行いません。どのレポートにも、何が見つかったか、証拠の強さ、何を確認できなかったかが明記され、「検出なし」を安全の証明として扱わない設計になっています。技術知識のないジャーナリストや活動家でも使えるよう、手順ガイドと対話メニューが用意されている点も特徴です。
-
-- Amnesty、Citizen Lab、MVT など29ソース・約12,400件の公開インジケーターと照合する
-- スキャン中は Python のネットワーク呼び出しをブロックし、読み取り専用で動く
-- PC のブラウザ履歴や各種ログ、Android（AndroidQF）、iPhone バックアップに対応
-- 証拠の強さの評価と「確認できなかった範囲（gap）」を必ず報告する
-- 標準ライブラリのみで動き、配布用単一ファイルは決定的ビルドで再現検証できる
-
-### 何をするものか
-
-国家などが使う傭兵型スパイウェアについて、研究機関が公開した既知のインジケーター（ドメイン、ファイルハッシュ、アプリ名、証明書など）が、端末の記録に残っていないかを調べるトリアージツールです。対象は Windows・macOS・Linux のコンピューターに加え、AndroidQF で収集した Android データ、Finder や Apple Devices で作った iPhone のローカルバックアップ（暗号化の有無を問わない）、展開済みファイルシステム、sysdiagnose アーカイブです。README は、未公開の新しいスパイウェアは検出できないこと、専門家によるフォレンジック調査の代わりにはならないことをはっきり書いています。今まさに標的にされていると感じる人には、ツールを使う前に Access Now Digital Security Helpline や Amnesty International の Security Lab に相談するよう勧めています。
-
-### 主な機能と検査対象
-
-Windows では、Chrome・Edge・Firefox・Tor Browser など多数のブラウザの履歴、Cookie、HSTS、キャッシュを調べます。ほかに Mark of the Web、Win+R の入力履歴、Microsoft Defender の検出履歴と除外設定、PowerShell ログ、Shim cache、Prefetch、Amcache、DNS キャッシュ、hosts ファイル、スタートアップ登録なども対象で、管理者権限は不要です。macOS と Linux では Safari の各種データベース、LaunchAgent・systemd・cron などの自動起動設定、シェル履歴、システムログを確認します。Android ではサイドロードされたアプリの権限、インストール履歴、SMS 内のリンク、ブートローダーのアンロック状態などを見ます。iPhone では SMS・iMessage・WhatsApp、Safari、クラッシュレポート、構成プロファイルなどを読みます。走査範囲は --scan-type で default、full、targeted、browser から選べます。
-
-### 仕組み・アーキテクチャ
-
-コードは scan/ 以下にあります。エントリーポイントは scan/zero-breach-toolkit.py で、本体パッケージの scan/zbtriage/ がインジケーターの読み込み、ネットワーク遮断（netguard.py）、レポート生成を担います。modules/ 配下には browser、host、posix、android、ios、hashscan、execution など、検査ごとのモジュールが置かれています。リーダーは共通のレジストリで管理され、プラットフォーム選択、カバレッジ説明、単一ファイルビルドに使われます。SQLite の WAL レコードは一時コピー上で検証してから再生し、ソース DB は変更しません。JSON の検出結果にはソースのハッシュとレコードの位置情報が残ります。Candiru 向けの YARA ルール（third_party/candiru）も同梱されています。tests/ には iOS 15〜18 のテーブル構造を含む大規模なテストスイートがあります。
-
-### 技術構成
-
-Python 3.8 以上で動き、追加パッケージなしで使えます。暗号化された iPhone バックアップを扱うときだけ、任意で cryptography パッケージが必要です。これは requirements-backups.txt からバージョンとハッシュを固定してインストールする方式で、自動インストールはされません。Android の収集には外部ツールの AndroidQF を使います。実験的な --collect-android は AndroidQF v1.8.3 を、SHA-256 を固定した状態でダウンロードして実行します。build/ にはリリース用の単一ファイルを作る bundle.py と、STIX、MISP、dnsmasq、hosts 形式でインジケーターを出力するスクリプトがあり、dist/ に生成物が置かれています。GitHub Actions でテストとリリース検証を行っています。
+RTX 4090はAD102用のファームウェアとペイロードが自動で選ばれます。従来のGA102/GA104（GeForce/CMP）とGA103/GA106のデバイスリストも残っており、GA107のRTX 3050 6GBも1枚で成功例があります。実験的なAda対応には、RTX 4090 D、RTX 4080/4080 SUPER、RTX 4070系、RTX 4060系、ノートPC向けRTX 4090/4060/4050 Laptopなどが含まれます。いずれもIDごとに専用のフラグ（ad103_experimentalなど）が必要で、多くは正確なPCIアドレスの指定も求められ、targets=allでは選択されません。検証は各IDにつき1枚から数枚程度です。ノートPCはVBIOSやEC、FLRの扱いが機種ごとに異なり、結果は他機種に流用できないと明記されています。
 
 ### 使い方・導入方法
 
-GitHub から ZIP をダウンロードするか git clone し、ツールのフォルダで python -X utf8 scan/zero-breach-toolkit.py --update を実行して最新のインジケーターを取得します。インターネットを使うのはこの手順だけです。続いて python -X utf8 scan/zero-breach-toolkit.py を実行するとメニューが開き、Enter で標準チェックが始まります。所要時間はおよそ15分です。Windows では scan/run-scan.cmd をダブルクリックしても起動できます。macOS では事前にターミナルへフルディスクアクセスを許可する必要があります。主なオプションは、--quick（ハッシュ検査を省略）、--phone でスマートフォンのデータを指定、--json で機械可読レポートを出力、--share-json で共有用の最小サマリーを出力、--evidence-bundle で証拠 ZIP を作成、などです。終了コード 0〜4 で結果をスクリプトから判定できます。
+git cloneした後にmake installを実行すると、ディストリビューションを判別してパッケージをビルドしインストールします。明示的なターゲットとしてmake install-arch、install-deb、install-rpmもあります。ビルド時にはpin留めされたNVIDIA 610.43.03の入力をHTTPSで取得し、SHA-256で検証してファームウェアを生成します。カーネルヘッダとDKMSが必要です。モジュールはinitramfs（mkinitcpio、initramfs-tools、dracut）に組み込まれ、カーネルコマンドラインにgpu_unlock.targets=0000:03:00.0のような指定をしたときだけ有効になります。成否はjournalctl -k -b | grep gpu_unlockでgpu_unlock: unlockedの表示を見て確認します。無効化するには、コマンドラインからtargets指定を外します。
+
+### 技術構成と検証資産
+
+本体はC言語のLinuxカーネルモジュール（kernel/gpu_unlock）です。Debian、RPM、Arch向けのパッケージングとDKMS設定が含まれます。diagnostics/benchにはCUDAによる命令ベンチマーク（mma_bench.cu、tensor_modes_issue.cu）やGEMM検証、diagnostics/peekには読み取り専用のBAR0サンプラーがあります。make testはGPUにアクセスしないホスト側テストで、make test-fullは生成アセットを必須とする厳格版です。いずれもファームウェア実行をモックしたものです。docs/evidence以下には、カードやドライバのバージョンごとに、stockとunlockedを対比した計測ログとSHA256SUMSが大量に収録されています。Windows向けのAD104移植はリファレンスとして別扱いになっています。
 
 ### 注目ポイント・注意点
 
-作者が匿名であることを前提に、自分で検証できる仕組みを重視しています。リリースの単一ファイルは決定的ビルドで、タグから再ビルドすれば SHA-256 を照合できます。GPG 署名も付いています。一方、署名済みの Windows 実行ファイルはなく、今後も予定されていません。--describe や scan/CONTRACT.md、skills/ 配下の SKILL.md など、AI アシスタントから使うことを想定した仕組みがあるのも珍しい点です。注意点もいくつかあります。完全なレポートにはユーザー名、閲覧履歴、SMS の抜粋などの個人情報が含まれます。証拠バンドルは暗号化されません。ネットワーク遮断は OS レベルのサンドボックスではありません。「一致あり」は感染確定ではなく、詳しく調べるべきだという合図として扱われます。
+README自身が、数値はレジスタ常駐の命令発行レートであり、アプリ全体の高速化ではないと何度も強調しています。量子化MoEの推論では効果がなく（0.983倍）、FP8 GEMMも計測条件によって差が出ませんでした。電力上限が固定されている場合、unlocked状態の方が消費電力が上がり、SW Power Capにかかる例も報告されています。初回は必ず電源を完全に切ってからのコールドブートで試す必要があります。NVIDIAドライバのロード後に手動でモジュールを入れても解除できません。ファームウェアが停止しなかった場合は強制アンロードせず電源断するよう指示されています。長期の安定性テストは限定的で、保証や法的な扱いについてはREADMEからは不明です。ライセンスはGPL-2.0-onlyで、NVIDIAファームウェアには別の条件が適用されます。
 
-- 技術構成: Python 3.8+, SQLite（WAL 処理）, cryptography（任意、暗号化 iPhone バックアップ用）, AndroidQF, YARA ルール（Candiru）, STIX / MISP, GitHub Actions, GPG
-- 向いている人: スパイウェアの標的になりうるジャーナリスト、活動家、人権擁護者、市民社会の関係者と、その支援者に向いています。専門知識がない人でも手順ガイドに沿って使えます。デジタルセキュリティやフォレンジックの初動トリアージ、IOC ベース検出の実装を学びたいエンジニアや学生、オフラインで動く検査ツールを AI アシスタントやスクリプトに組み込みたい人の参考にもなります。
+- 技術構成: C, Linux kernel module, DKMS, CUDA, Python, Makefile, mkinitcpio / initramfs-tools / dracut, Debian packaging / RPM / makepkg, cuBLAS / CUTLASS（ベンチマーク）
+- 向いている人: RTX 4090などAda世代GeForceを所有し、Linux上でFP16/BF16のFP32累積テンソル演算（学習や非量子化GEMMなど）の性能を引き出したい上級ユーザーや研究者に向いています。GPUファームウェアやカーネルモジュールのリバースエンジニアリングに関心がある人にとっては、豊富な検証記録も参考になります。一方で、コールドブートの手順やカーネルコマンドラインの編集、障害時の切り戻しを自分で扱える知識が前提となります。実験的なハードウェア改変のリスクを理解したうえで使う必要があります。
 
-## 10. [anhao/ai-pose-gallery-zh](https://github.com/anhao/ai-pose-gallery-zh)（総合 / ★3,609）
+## 9. [interplains/Zero-Breach-Toolkit](https://github.com/interplains/Zero-Breach-Toolkit)（総合 / ★3,701）
 
-**日本語のAI人体ポーズ参考画像サイトを全量ミラーし、中国語化した依存ゼロの静的ギャラリー**
+**Pegasus や Predator など既知の傭兵型スパイウェアの痕跡を、PC やスマホのデータからオフラインで調べる無料のPython製ツール**
 
-原作者ギア氏が公開していたAIポーズ参考図鑑は、メタデータがすべて日本語で、素材の一括ダウンロードにも対応していませんでした。本リポジトリはその1439件分の画像を収録しています。サムネイルと原寸画像で計2878ファイルです。あわせてメタデータを中国語に全訳し、依存ライブラリなしで動くレスポンシブなギャラリーを用意しています。Cloudflare Pagesへそのままデプロイでき、Claude Codeなどで使えるAgent用のSkillsも同梱されており、AI画像・動画生成のポーズ参考として使える点が特徴です。
+Zero Breach Toolkit は、Pegasus、Predator、Graphite、Candiru といった商用(傭兵型)スパイウェアの公開済み痕跡(IOC)を探すツールです。Windows・macOS・Linux のPCに加え、AndroidQF で取得した Android の収集データや iPhone のローカルバックアップも検査できます。読み取り専用で、スキャン中はネットワークにアクセスしません。報告書では、何が見つかったか、その証拠がどれだけ強いか、何を調べられなかったかを必ず明示します。技術知識のないジャーナリストや活動家でも使えるよう、手順が丁寧に書かれている点も特徴です。
 
-- 288ポーズ・1439件・2878ファイル（約659.5MB）を収録
-- 日本語メタデータを全項目中国語化し、323件の対訳表も付属
-- index.html単体で動く依存ゼロのギャラリー
-- Cloudflare Pages向けのビルドスクリプトとキャッシュ設定を同梱
-- AI Agent向けSKILL.md形式のポーズ検索スキルを5種提供
+- 既知スパイウェアの公開IOC 約12,400件(29ソース)と照合する
+- 読み取り専用で、スキャン中は Python のネットワーク呼び出しを遮断する
+- PCとAndroid収集データ、iPhoneバックアップに対応
+- 「検出なし」を安全の証明として扱わず、調べられなかった範囲を必ず報告する
+- 追加パッケージ不要、Python 3.8以上だけで動き、ビルドは再現可能
 
 ### 何をするものか
 
-AI絵画、3D、撮影の参考になる人体ポーズ画像集の中国語版ミラーです。元サイトは ai-pose-gallery.pages.dev で、原作者はギア（@giaaibusi）、中国語版はAnhaoがメンテナンスしています。作業は3つです。1つ目は、1439件分のサムネイル（JPG 300×400）と原寸画像（PNG 900×1200）を全件ローカルに保存したこと。2つ目は、4つの体系、26の分類、288のポーズ名、5つの視点を漏れなく中国語訳したこと。3つ目は、元サイトの機能を再現したフロントエンドを用意したことです。体系の内訳は、全身単人・標準系365件、全身単人・セクシー系399件、上半身単人400件、二人ポーズ275件です。なお、GitHubの説明文にある「1439组 / 2878张」は、READMEの記述（288組・1439件・2878ファイル）と数え方が異なるので注意してください。
+国家レベルの標的型攻撃で使われる商用スパイウェア(Pegasus、Predator、Graphite、Candiru など)について、公開済みの痕跡を端末から探すトリアージツールです。照合に使うのは、Amnesty International の Security Lab、Citizen Lab、Mobile Verification Toolkit(MVT)プロジェクト、Echap が公開している約12,400件の指標です。対象はPCのブラウザ履歴やシステム記録、Android の収集データ、iPhone のバックアップです。README は最初に「今まさに狙われていると思うなら、まず専門家に相談を」と案内し、Access Now の Digital Security Helpline などを紹介しています。あくまで一次確認のための道具という位置づけです。
 
 ### 主な機能
 
-ギャラリーは4体系のタブ切り替えに対応し、各タブに画像数とポーズ組数が表示されます。ポーズ名、番号、ID、分類キーワードで検索でき、スラッシュキーで検索欄にすぐ移動できます。動作分類と5種類の視点（正面、斜め、側面、俯瞰、煽り）を組み合わせて絞り込めます。表示はポーズ単位のグループ表示と1枚ずつの表示を切り替えられます。ライトボックスではまずサムネイルを表示し、その後に原寸画像を読み込みます。PNGの直接ダウンロード、IDのコピー、新規ウィンドウでの表示にも対応しています。キーボードでは左右キーで角度、上下キーでポーズを切り替え、Escで閉じます。スマートフォンではスワイプ操作と2列表示に対応し、絞り込みパネルを折りたためます。
+Windows では次のような項目を調べます。いずれも管理者権限は不要です。
+・Chrome、Edge、Firefox、Tor Browser など多数のブラウザの履歴、Cookie、HSTS、キャッシュ
+・Chromium を内蔵するデスクトップアプリ
+・ダウンロードファイルの Mark of the Web
+・Win+R の入力履歴、PowerShell ログ、Defender の履歴
+・Prefetch、Amcache、DNS キャッシュ、スタートアップ登録
+・指定フォルダ内ファイルのハッシュ
+macOS と Linux では、Safari の各種データベース、LaunchAgent、systemd、cron、シェル履歴などを調べます。Android では、インストール履歴、署名証明書、SMS 内のリンク、改造端末の兆候を確認します。iPhone では、メッセージ、Safari、診断ログなど、iOS 15〜18 のデータ構造に対応しています。
 
 ### 仕組み・アーキテクチャ
 
-index.html 1枚のシングルページアプリで、fetchを使って data/pose-zh.json を読み込み描画します。pose-zh.json には、id、体系、姿势编号、分类、姿势名称、角度、缩略图、原图、そして検索用の結合文字列「检索」が含まれ、これを使ってあいまい検索を行います。元の日本語データ pose.json と meta.json は改変せずに残されており、比較や再取り込みに使えます。データ生成は scripts/ 以下のPythonスクリプトで行います。i18n.py は重複を除いた323件の日中辞書、apply_translation.py は訳文を当てはめて中国語データを生成するスクリプトです。download.py は48スレッドの並列ダウンロード、途中再開、自動リトライに対応し、verify.py はファイルの存在、サイズ、画像ヘッダーを検証します。SEO対策として、canonical、Open Graph、Twitter Card、JSON-LD（WebSite と ImageGallery）、robots.txt、sitemap.xml も組み込まれています。
+コードは scan/ 以下にまとまっています。
+・入口:scan/zero-breach-toolkit.py
+・本体:scan/zbtriage/ パッケージ(指標の読み込み、ネットワーク遮断を担う netguard、レポート生成など)
+・検査ごとの処理:scan/zbtriage/modules/ に browser、android、ios、hashscan、posix などが並ぶ
+各リーダーは1つのレジストリを共有しており、プラットフォーム選択、カバレッジ説明、単一ファイルビルドに使われます。iPhone の SQLite WAL は一時コピー上で検証・再生するため、元データは変更されません。Android 端末とは直接通信せず、AndroidQF の収集結果を読みます。レポートでは各検出に証拠グレードが付き、「Worth a look(要確認)」「時系列」「確認できなかった範囲」に分けて示されます。
 
 ### 使い方・導入方法
 
-JSONをfetchで読み込むため、index.html をダブルクリックで開くとCORSにより読み込みが止められます。ローカルでは python3 -m http.server 8000 を実行し、http://127.0.0.1:8000 を開いてください。画像の再取得は python3 scripts/download.py で行います。並列数は WORKERS=64 のように環境変数で変えられます。訳文を修正した場合は apply_translation.py を実行し、検証には verify.py を使います。Cloudflare Pagesにデプロイする場合は、Framework preset を None、Build command を bash scripts/build.sh、出力先を dist に設定します。コマンドラインからは npx wrangler pages deploy dist で直接アップロードできます。Forkして別ドメインで公開する場合は、index.html、robots.txt、sitemap.xml 内の絶対URLを書き換える必要があります。
+Python 3.8 以上を入れ、ZIP をダウンロードするか git clone します。
+・指標リストの更新:python -X utf8 scan/zero-breach-toolkit.py --update(インターネットを使うのはこの手順だけ)
+・検査の実行:オプションなしで起動するとメニューが出て、Enter で標準検査が始まる(約15分)
+・Windows では scan/run-scan.cmd をダブルクリックしても実行できる
+主なオプションは次のとおりです。
+・--quick:高速版
+・--phone "FOLDER":スマホの収集データやバックアップを検査
+・--json:機械可読なレポート
+・--share-json:共有用の最小サマリ
+・--scan-type:検査範囲を full、targeted、browser から選ぶ
+暗号化された iPhone バックアップには、別途 requirements-backups.txt から cryptography パッケージを入れる必要があります。macOS では、ターミナルにフルディスクアクセスを与えておかないと Safari を検査できません。
 
-### Agent Skills
+### 技術構成と検証性
 
-skills/ 以下に、SKILL.md形式のAgentスキルが5つあります。standard、upper、sexy、couple、all の5種類で、AI Agentがポーズ名と視点から白モデル画像を検索し、画像・動画生成の参考にできます。各スキルは references/catalog.csv を持ち、画像パスは ../../img/<id>.png という相対パスでリポジトリ内の img/ を直接参照します。そのため、リポジトリ全体をクローンしたまま、スキルディレクトリを ~/.claude/skills/ などへコピーではなくシンボリックリンクで配置する必要があります。リポジトリを移動したときはリンクを張り直してください。画像を内蔵した単独コピー可能な版としては、別リポジトリの jasoncai0/pose-reference-skills が紹介されています。
+主要言語は Python で、標準ライブラリだけで動きます。暗号化バックアップの解析だけは、オプションの cryptography(バージョンとハッシュを固定)が必要です。
+・Candiru 検出には YARA ルールを同梱(third_party/candiru)
+・dist/ には STIX、MISP、hosts 形式などの指標エクスポートがある
+・build/bundle.py が配布用の単一ファイルを決定論的にビルドする。SHA-256 を照合すれば、リリース物がソースと一致することを自分で確かめられる
+・リリースには GPG 署名が付く
+・GitHub Actions でテストとリリース検証を実行している
+・AI アシスタント向けに --describe や SKILL.md も用意されている
+ライセンスは、コードが Apache-2.0、キュレーション済み指標が CC0 です。
 
 ### 注目ポイント・注意点
 
-画像の一部は成人向けのポーズ参考で、セクシー系と二人ポーズのスキルは18+と明記されています。用途は芸術創作、動作参考、フロントエンド学習に限られ、未成年の閲覧は不可とされています。ライセンスにも注意が必要です。MITライセンスが適用されるのは scripts/ と index.html のコードだけで、img/、thumbs/、data/ の画像と元データの著作権は原作者ギア氏にあります。本リポジトリは画像に対していかなる権利も主張しておらず、原作者から要請があれば削除するとしています。容量は原寸画像だけで約637MBと大きいです。Cloudflare Pagesで出力先をルートディレクトリにすると、.git が原因でビルドに失敗する点もREADMEで注意されています。
+見つけられるのは公開済みの指標だけです。新しいスパイウェアや、標的ごとに作り直された検体は検出できません。痕跡の多くも数週間で消えます。「一致あり」は「感染している」ではなく「詳しく見るべき」という意味で、専門家によるフォレンジックの代わりにはなりません。レポートにはユーザー名や閲覧履歴など個人情報が含まれるので、共有の扱いには注意が必要です。プロジェクトは匿名運営で、署名付きの Windows 実行ファイルは提供しない方針です。README はソースから実行し、自分で検証することを勧めています。なお、メタデータ上の作成日時が 2026年 となっている点は、README からは理由が不明です。
 
-- 技術構成: HTML, JavaScript（依存ライブラリなし）, Python（ダウンロード・翻訳・検証スクリプト）, Bash（build.sh）, JSON / CSV, Cloudflare Pages, wrangler, JSON-LD / Open Graph
-- 向いている人: AI画像・動画生成や3D、イラスト、撮影でポーズ参考を探す中国語圏のクリエイターに向いています。依存ゼロの静的ギャラリー、Cloudflare Pagesへのデプロイ、SEO設定、Python製スクレイピングと翻訳パイプラインの実例を学びたいフロントエンド学習者にも参考になります。Claude CodeなどのAgentにポーズ参照スキルを組み込みたい人にも使えます。ただし成人向けコンテンツを含み、画像の権利は原作者にあるため、利用目的には注意が必要です。
+- 技術構成: Python 3.8+, SQLite(WAL解析), cryptography(オプション), YARA ルール, AndroidQF, STIX / MISP, GitHub Actions
+- 向いている人: スパイウェアの標的になりうるジャーナリスト、活動家、人権擁護者が最初に行う確認に向いています。そうした人を支援するデジタルセキュリティ担当者や、IOC ベースのフォレンジック・トリアージ手法を学びたいエンジニアや学生にも参考になります。
+
+## 10. [anhao/ai-pose-gallery-zh](https://github.com/anhao/ai-pose-gallery-zh)（総合 / ★3,612）
+
+**日本語のAIポーズ参考画像サイトを全量ミラーし、中国語化した上で依存ゼロの静的ギャラリーとして公開するリポジトリ**
+
+原作者ギア氏が公開しているAI絵画・3D・撮影向けの人体ポーズ参考図鑑は、メタデータが日本語のみで一括ダウンロードもできませんでした。本リポジトリは1439件分のサムネイルと原寸画像をすべて取得し、体系・分類・ポーズ名・視角を中国語に翻訳したうえで、フレームワーク不要のレスポンシブなギャラリーとしてCloudflare Pagesにそのままデプロイできる形にまとめています。さらにClaude Codeなどで使えるAgent用のSKILL.mdも同梱しており、画像生成や動画生成時のポーズ参照素材として使えるようにしている点が特徴です。
+
+- 288種のポーズ・1439枚の多角度参考画像を全量ミラー
+- 日本語メタデータを323語の対訳辞書で完全中国語化
+- 依存ゼロのindex.html単体でフィルタ・灯箱・DLを実装
+- Cloudflare Pages向けビルドスクリプトと_headersを同梱
+- Claude Code等で使えるpose-reference系Skillsを5種提供
+
+### 何をするものか
+
+日本の原サイト ai-pose-gallery.pages.dev で公開されている、AI絵画や3D、撮影の参考用人体ポーズ画像集を中国語で使えるようにしたミラーです。README によると、全身単人・標準系365件、全身単人・セクシー系399件、上半身単人400件、二人系275件の計1439件があり、各ポーズは正面・斜め・側面・俯瞰・煽りの5視角のうちいくつかを持ちます。なおリポジトリ説明文では「1439组 / 2878张」、README本文では「288组 / 1439张」と表記が異なりますが、README の内訳ではポーズ名288種、レコード1439件、サムネイルと原寸画像を合わせて2878ファイルと読めます。成人向けの分類も含まれる点に注意が必要です。
+
+### 主な機能
+
+ギャラリーは4つの体系タブを持ち、それぞれ画像数とポーズ組数を表示します。ポーズ名・番号・ID・分類キーワードで検索でき、スラッシュキーで検索欄にフォーカスできます。動作分類と5種の視角を組み合わせたフィルタ、ポーズ単位のグループ表示と1枚ずつの表示の切り替え、サムネイルのホバーやクリックによる角度切り替えに対応します。ライトボックスではまずサムネイルを表示してから900×1200の原寸PNGを読み込み、PNGの直接ダウンロード、IDコピー、新規ウィンドウ表示が可能です。矢印キーで角度とポーズを移動、Escで閉じ、スマホではスワイプ操作もできます。
+
+### 仕組み・アーキテクチャ
+
+構成は単一の index.html と JSON データ、画像フォルダだけの純粋な静的サイトです。フロントエンドは fetch で data/pose-zh.json を読み込み、検索用に連結した「检索」フィールドを使ってあいまい検索を行います。元の日本語データ data/pose.json は改変せずに保持され、翻訳は scripts/i18n.py の辞書（重複除去後323件）を scripts/apply_translation.py で流し込んで中国語版を生成する流れです。画像取得には48スレッド並列・レジューム・自動リトライ対応の download.py、ファイルの存在・サイズ・画像ヘッダを確認する verify.py が用意されています。SEO面では canonical、Open Graph、Twitter Card、JSON-LD（WebSite と ImageGallery）、robots.txt、sitemap.xml まで整備されています。
+
+### 使い方・導入方法
+
+JSONを fetch で読むため、index.html をダブルクリックで開くとCORSで弾かれます。ローカルでは python3 -m http.server 8000 を実行して http://127.0.0.1:8000 を開きます。Cloudflare Pagesへは、Git連携で Framework preset を None、Build command を bash scripts/build.sh、出力ディレクトリを dist に設定すれば push ごとに自動公開されます。コマンドラインからは bash scripts/build.sh の後に npx wrangler pages deploy dist --project-name ai-pose-gallery-zh で直接アップロードできます。出力先をルートにすると .git 内のpackファイルが25MiB制限を超えて失敗するため、dist の利用が推奨されています。Fork して別ドメインで使う場合は index.html や robots.txt、sitemap.xml 内のURLを置き換える必要があります。
+
+### Agent向けSkills
+
+skills/ 配下には SKILL.md 形式のスキルが5種あり、pose-reference-standard、pose-reference-upper、pose-reference-sexy、pose-reference-couple、そして全件を対象とする pose-reference-all が含まれます。各スキルは SKILL.md と references/catalog.csv を持ち、csv の画像列は ../../img/<id>.png という相対パスでリポジトリの img/ を再利用します。そのためリポジトリ全体をcloneしたまま、スキルディレクトリを ~/.claude/skills/ にシンボリックリンクで配置する必要があり、コピーすると画像が参照できません。画像を同梱した単体配布版としては別リポジトリ jasoncai0/pose-reference-skills が紹介されています。
+
+### 注目ポイント・注意点
+
+ライセンス表記はNOASSERTIONで、README によれば scripts/ と index.html のコードのみがMITライセンスです。img/、thumbs/、data/ の画像と元データの著作権は原作者ギア氏にあり、MITの対象外と明記されています。リポジトリは個人の学習・翻訳・静的サイト実践のアーカイブという位置付けで、商用利用の許諾にはならず、権利者から申し立てがあれば削除するとしています。また成人向けのポーズや性的な用語を含む分類があり、未成年の閲覧は不可とされています。画像総量は約659.5MBと大きいため、clone時の容量にも注意が必要です。日本語話者にとっては、日中対訳表 translations.csv が辞書的な資料としても参考になるでしょう。
+
+- 技術構成: HTML, JavaScript（fetchによるJSON読み込み）, JSON, Python（download.py、i18n.py、apply_translation.py、verify.py）, Bash（build.sh）, Cloudflare Pages, wrangler, SKILL.md（Claude Code等のAgentスキル）
+- 向いている人: AI画像生成・3D・イラスト・撮影でポーズ参考資料を探しているクリエイター、Claude Code などのAgentに参照用ポーズ画像を渡したい人、依存ゼロの静的ギャラリーやCloudflare Pagesへのデプロイ、SEO設定、多言語化の実例を学びたいフロントエンド学習者に向いています。ただし成人向けコンテンツを含み、画像の権利は原作者に帰属するため、利用目的には注意が必要です。
