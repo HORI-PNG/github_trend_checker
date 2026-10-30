@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>GitHub 週間スター上位レポート {{ meta.date }}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 18mm 16mm;
+    @bottom-center { content: counter(page) " / " counter(pages); font-size: 8pt; color: #888; }
+  }
+  body { font-family: "Noto Sans CJK JP", sans-serif; font-size: 10pt; line-height: 1.7; color: #1f2328; }
+  a { color: #0969da; text-decoration: none; word-break: break-all; }
+  h1 { font-size: 22pt; margin: 0 0 4mm; }
+  h2 { font-size: 15pt; margin: 0 0 2mm; }
+  h3 { font-size: 11.5pt; margin: 5mm 0 1mm; padding-left: 2.5mm; border-left: 3px solid #0969da; }
+  .cover { page-break-after: always; }
+  .cover .sub { color: #57606a; margin-bottom: 8mm; }
+  table.toc { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  table.toc th, table.toc td { border-bottom: 1px solid #d0d7de; padding: 1.6mm 2mm; text-align: left; vertical-align: top; }
+  table.toc th { background: #f6f8fa; }
+  table.toc td.num { text-align: right; white-space: nowrap; }
+  table.toc td.cat { white-space: nowrap; }
+  .repo { page-break-before: always; }
+  .repo:first-of-type { page-break-before: auto; }
+  .badge { display: inline-block; font-size: 8pt; padding: 0.5mm 2.5mm; border-radius: 3mm; color: #fff; margin-right: 2mm; }
+  .badge.theme { background: #8250df; }
+  .badge.general { background: #1a7f37; }
+  .meta { color: #57606a; font-size: 9pt; margin: 1mm 0 3mm; }
+  .oneliner { background: #ddf4ff; border-radius: 2mm; padding: 3mm 4mm; font-weight: bold; margin: 3mm 0; }
+  ul.points { margin: 2mm 0 0; padding-left: 5mm; }
+  .footer-info { margin-top: 5mm; font-size: 9pt; background: #f6f8fa; padding: 3mm 4mm; border-radius: 2mm; }
+</style>
+</head>
+<body>
+<section class="cover">
+  <h1>GitHub 週間スター上位レポート</h1>
+  <div class="sub">
+    {{ meta.date }} 作成 ／ 対象: {{ meta.since }} 以降に作成されたリポジトリ<br>
+    テーマ: {{ meta.themes | join("、") if meta.themes else "（なし）" }}{% if meta.language %} ／ 言語: {{ meta.language }}{% endif %}
+  </div>
+  <table class="toc">
+    <tr><th>#</th><th>区分</th><th>リポジトリ</th><th>★</th><th>一言で</th></tr>
+    {% for e in entries %}
+    <tr>
+      <td class="num">{{ loop.index }}</td>
+      <td class="cat">{{ "テーマ" if e.repo.category == "theme" else "総合" }}</td>
+      <td><a href="{{ e.repo.html_url }}">{{ e.repo.full_name }}</a></td>
+      <td class="num">{{ "{:,}".format(e.repo.stars) }}</td>
+      <td>{{ e.summary.one_liner }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</section>
+
+{% for e in entries %}
+{% set r = e.repo %}{% set s = e.summary %}
+<section class="repo">
+  <h2>
+    <span class="badge {{ r.category }}">{{ "テーマ" if r.category == "theme" else "総合" }}</span>{{ loop.index }}. {{ r.full_name }}
+  </h2>
+  <div><a href="{{ r.html_url }}">{{ r.html_url }}</a></div>
+  <div class="meta">
+    ★ {{ "{:,}".format(r.stars) }} ／ フォーク {{ "{:,}".format(r.forks) }} ／ 言語 {{ r.language or "不明" }}
+    ／ 作成 {{ r.created_at[:10] }}{% if r.license %} ／ {{ r.license }}{% endif %}
+    {% if r.matched_themes %}<br>該当テーマ: {{ r.matched_themes | join("、") }}{% endif %}
+  </div>
+  <div class="oneliner">{{ s.one_liner }}</div>
+  <h3>概要</h3>
+  <p>{{ s.summary }}</p>
+  <h3>要点</h3>
+  <ul class="points">{% for p in s.key_points %}<li>{{ p }}</li>{% endfor %}</ul>
+  {% for d in s.details %}
+  <h3>{{ d.heading }}</h3>
+  <p>{{ d.body }}</p>
+  {% endfor %}
+  <div class="footer-info">
+    技術構成: {{ s.tech_stack | join("、") if s.tech_stack else "不明" }}<br>
+    向いている人: {{ s.target_users }}
+  </div>
+</section>
+{% endfor %}
+</body>
+</html>

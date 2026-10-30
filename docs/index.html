@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub Digest 管理</title>
+<style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --text: #1f2328; --muted: #59636e;
+    --border: #d1d9e0; --accent: #0969da; --accent-text: #ffffff; --ok: #1a7f37; --err: #d1242f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117; --card: #151b23; --text: #f0f6fc; --muted: #9198a1;
+      --border: #3d444d; --accent: #4493f8; --accent-text: #0d1117; --ok: #3fb950; --err: #f85149;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif; line-height: 1.6; }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 20px; font-size: .9rem; }
+  section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  h2 { font-size: 1.05rem; margin: 0 0 12px; }
+  label { display: block; font-weight: 600; font-size: .9rem; margin: 12px 0 4px; }
+  .hint { color: var(--muted); font-size: .8rem; font-weight: normal; }
+  input, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+                    background: var(--bg); color: var(--text); font: inherit; }
+  textarea { min-height: 110px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button { margin-top: 14px; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--accent);
+           background: var(--accent); color: var(--accent-text); font: inherit; font-weight: 600; cursor: pointer; }
+  button.sub { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  .status { margin-top: 10px; font-size: .9rem; min-height: 1.4em; }
+  .status.ok { color: var(--ok); } .status.err { color: var(--err); }
+  ul.reports { list-style: none; margin: 0; padding: 0; }
+  ul.reports li { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  ul.reports li:last-child { border-bottom: 0; }
+  ul.reports .date { font-weight: 600; min-width: 7em; }
+  a { color: var(--accent); }
+  details summary { cursor: pointer; font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>GitHub Digest 管理</h1>
+  <p class="lead">毎週月曜 10:00 に、直近1週間で作られたリポジトリをスター順に集めてレポートにします。</p>
+
+  <section>
+    <h2>収集設定</h2>
+    <label for="themes">テーマ <span class="hint">1行に1つ。キーワードごとに検索します</span></label>
+    <textarea id="themes" placeholder="LLM&#10;AI agent"></textarea>
+    <label for="language">言語で絞る <span class="hint">例: Python（空欄なら全言語）</span></label>
+    <input id="language" type="text">
+    <div class="row">
+      <div>
+        <label for="themed_count">テーマありの件数</label>
+        <input id="themed_count" type="number" min="0" max="20">
+      </div>
+      <div>
+        <label for="general_count">テーマなしの件数</label>
+        <input id="general_count" type="number" min="0" max="20">
+      </div>
+    </div>
+    <button id="save">保存</button>
+    <button id="run" class="sub">今すぐ実行</button>
+    <div id="status" class="status"></div>
+  </section>
+
+  <section>
+    <h2>レポート一覧</h2>
+    <ul id="reports" class="reports"><li>読み込み中…</li></ul>
+  </section>
+
+  <section>
+    <details id="token-box">
+      <summary>GitHub トークン</summary>
+      <p class="hint">保存・実行に必要です。このリポジトリだけを対象にした fine-grained token
+        （Contents: Read and write、Actions: Read and write）を入力してください。
+        トークンはこのブラウザにだけ保存されます。</p>
+      <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+      <button id="token-save" class="sub">このブラウザに保存</button>
+      <button id="token-clear" class="sub">削除</button>
+    </details>
+  </section>
+</main>
+
+<script>
+  // GitHub Pages の URL（<owner>.github.io/<repo>/）からリポジトリを特定する
+  const OWNER = location.hostname.endsWith(".github.io") ? location.hostname.split(".")[0] : "HORI-PNG";
+  const REPO = location.hostname.endsWith(".github.io")
+    ? (location.pathname.split("/").filter(Boolean)[0] || "github_trend_checker")
+    : "github_trend_checker";
+  const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+  const CONFIG_PATH = "config/themes.json";
+  const TOKEN_KEY = "digest-token";
+
+  const $ = (id) => document.getElementById(id);
+  let configSha = null;
+  let currentConfig = {};
+
+  function getToken() {
+    try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; }
+  }
+  function setStatus(text, kind = "") {
+    $("status").textContent = text;
+    $("status").className = "status " + kind;
+  }
+  function headers(auth) {
+    const h = { Accept: "application/vnd.github+json" };
+    const token = getToken();
+    if (auth || token) h.Authorization = `Bearer ${token}`;
+    return h;
+  }
+  const toBase64 = (text) => {
+    const bytes = new TextEncoder().encode(text);
+    let bin = "";
+    bytes.forEach((b) => { bin += String.fromCharCode(b); });
+    return btoa(bin);
+  };
+  const fromBase64 = (b64) =>
+    new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\n/g, "")), (c) => c.charCodeAt(0)));
+
+  async function loadConfig() {
+    const res = await fetch(`${API}/contents/${CONFIG_PATH}?ref=main`, { headers: headers(false), cache: "no-store" });
+    if (!res.ok) throw new Error(`設定の読み込みに失敗しました (${res.status})`);
+    const data = await res.json();
+    configSha = data.sha;
+    currentConfig = JSON.parse(fromBase64(data.content));
+    $("themes").value = (currentConfig.themes || []).join("\n");
+    $("language").value = currentConfig.language || "";
+    $("themed_count").value = currentConfig.themed_count ?? 5;
+    $("general_count").value = currentConfig.general_count ?? 5;
+  }
+
+  function requireToken() {
+    if (getToken()) return true;
+    setStatus("先に下の「GitHub トークン」を保存してください。", "err");
+    $("token-box").open = true;
+    return false;
+  }
+
+  async function saveConfig() {
+    if (!requireToken()) return;
+    const counts = ["themed_count", "general_count"].map((id) => Number($(id).value));
+    if (counts.some((n) => !Number.isInteger(n) || n < 0 || n > 20)) {
+      setStatus("件数は 0〜20 の整数で入力してください。", "err");
+      return;
+    }
+    const config = {
+      ...currentConfig,
+      themes: $("themes").value.split("\n").map((s) => s.trim()).filter(Boolean),
+      language: $("language").value.trim(),
+      themed_count: counts[0],
+      general_count: counts[1],
+    };
+    $("save").disabled = true;
+    setStatus("保存中…");
+    try {
+      const res = await fetch(`${API}/contents/${CONFIG_PATH}`, {
+        method: "PUT",
+        headers: headers(true),
+        body: JSON.stringify({
+          message: "設定を更新（管理画面）",
+          content: toBase64(JSON.stringify(config, null, 2) + "\n"),
+          sha: configSha,
+          branch: "main",
+        }),
+      });
+      if (!res.ok) throw new Error(`保存に失敗しました (${res.status})`);
+      configSha = (await res.json()).content.sha;
+      currentConfig = config;
+      setStatus("保存しました。次回の収集から反映されます。", "ok");
+    } catch (e) {
+      setStatus(e.message, "err");
+    } finally {
+      $("save").disabled = false;
+    }
+  }
+
+  async function runNow() {
+    if (!requireToken()) return;
+    $("run").disabled = true;
+    setStatus("実行を依頼しています…");
+    try {
+      const res = await fetch(`${API}/actions/workflows/weekly-digest.yml/dispatches`, {
+        method: "POST", headers: headers(true), body: JSON.stringify({ ref: "main" }),
+      });
+      if (!res.ok) throw new Error(`実行の依頼に失敗しました (${res.status})`);
+      setStatus("実行を開始しました。完了まで 10〜20 分ほどかかります。", "ok");
+    } catch (e) {
+      setStatus(e.message, "err");
+    } finally {
+      $("run").disabled = false;
+    }
+  }
+
+  async function loadReports() {
+    const list = $("reports");
+    const res = await fetch(`${API}/contents/reports?ref=main`, { headers: headers(false), cache: "no-store" });
+    if (res.status === 404) { list.innerHTML = "<li>まだレポートはありません。</li>"; return; }
+    if (!res.ok) { list.innerHTML = `<li>一覧の読み込みに失敗しました (${res.status})</li>`; return; }
+    const dirs = (await res.json()).filter((e) => e.type === "dir").map((e) => e.name).sort().reverse();
+    if (!dirs.length) { list.innerHTML = "<li>まだレポートはありません。</li>"; return; }
+    const base = `https://github.com/${OWNER}/${REPO}`;
+    list.innerHTML = "";
+    for (const d of dirs) {
+      const li = document.createElement("li");
+      const links = [
+        ["PDF", `${base}/blob/main/reports/${d}/report.pdf`],
+        ["PPTX", `${base}/raw/main/reports/${d}/report.pptx`],
+        ["Web で読む", `${base}/blob/main/reports/${d}/report.md`],
+      ];
+      const date = document.createElement("span");
+      date.className = "date";
+      date.textContent = d;
+      li.append(date);
+      for (const [label, href] of links) {
+        const a = document.createElement("a");
+        a.href = href; a.textContent = label; a.target = "_blank"; a.rel = "noopener";
+        li.append(a);
+      }
+      list.append(li);
+    }
+  }
+
+  $("save").addEventListener("click", saveConfig);
+  $("run").addEventListener("click", runNow);
+  $("token-save").addEventListener("click", () => {
+    try { localStorage.setItem(TOKEN_KEY, $("token").value.trim()); } catch {}
+    $("token").value = "";
+    setStatus(getToken() ? "トークンを保存しました。" : "トークンを保存できませんでした。", getToken() ? "ok" : "err");
+  });
+  $("token-clear").addEventListener("click", () => {
+    try { localStorage.removeItem(TOKEN_KEY); } catch {}
+    setStatus("トークンを削除しました。", "ok");
+  });
+
+  loadConfig().catch((e) => setStatus(e.message, "err"));
+  loadReports().catch(() => { $("reports").innerHTML = "<li>一覧の読み込みに失敗しました。</li>"; });
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+name: Weekly GitHub Digest
+
+on:
+  schedule:
+    - cron: "0 1 * * 1" # 毎週月曜 10:00 JST（GitHub 側の混雑で数分〜数十分遅れることがある）
+  workflow_dispatch: # 管理画面や Actions タブから手動実行
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 日本語フォントと PDF 用ライブラリを入れる
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q fonts-noto-cjk libpango-1.0-0 libpangoft2-1.0-0
+
+      - run: pip install -r requirements.txt
+
+      - name: レポートを作成
+        run: python -m digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: レポートをコミット
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports
+          if git diff --cached --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git commit -m "レポート追加: $(TZ=Asia/Tokyo date +%Y-%m-%d)"
+          git pull --rebase
+          git push
