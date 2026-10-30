@@ -1,0 +1,414 @@
+{
+  "meta": {
+    "date": "2026-10-30",
+    "since": "2026-10-23",
+    "themes": [
+      "LLM",
+      "AI agent"
+    ],
+    "language": "",
+    "model": "claude-opus-5-5",
+    "generated_at": "2026-10-30T17:56:33+09:00"
+  },
+  "entries": [
+    {
+      "repo": {
+        "full_name": "andyhuo520/digital-human-koubo",
+        "html_url": "https://github.com/andyhuo520/digital-human-koubo",
+        "description": "AI digital-human talking-head videos from one photo: Renoise MCP generation + 5 editing styles + 48 creator-grade packaging components. Agent skill for Claude Code / Codex / OpenClaw / WorkBuddy …",
+        "stars": 1522,
+        "forks": 344,
+        "language": "TypeScript",
+        "topics": [],
+        "created_at": "2026-10-26T04:34:09Z",
+        "default_branch": "main",
+        "license": "MIT",
+        "category": "theme",
+        "matched_themes": [
+          "AI agent"
+        ]
+      },
+      "summary": {
+        "one_liner": "AI digital-human talking-head videos from one photo: Renoise MCP generation + 5 ",
+        "summary": "AI digital-human talking-head videos from one photo: Renoise MCP generation + 5 editing styles + 48 creator-grade packaging components. Agent skill for Claude Code / Codex / OpenClaw / WorkBuddy …",
+        "key_points": [
+          "スター数: 1522",
+          "主要言語: TypeScript"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [
+          "TypeScript"
+        ],
+        "target_users": "README からは不明"
+      }
+    },
+    {
+      "repo": {
+        "full_name": "DenisSergeevitch/ex-ussr-kinship-research",
+        "html_url": "https://github.com/DenisSergeevitch/ex-ussr-kinship-research",
+        "description": "Evidence-first genealogy skill for AI agents (Codex, Claude Code): church books, civil, military, deportation and repression records across the former USSR. Replies in your language.",
+        "stars": 1281,
+        "forks": 134,
+        "language": "Python",
+        "topics": [
+          "agent-skills",
+          "archives",
+          "claude-code",
+          "codex",
+          "family-history",
+          "familysearch",
+          "genealogy",
+          "ussr"
+        ],
+        "created_at": "2026-10-25T10:05:56Z",
+        "default_branch": "main",
+        "license": "MIT",
+        "category": "theme",
+        "matched_themes": [
+          "AI agent"
+        ]
+      },
+      "summary": {
+        "one_liner": "Evidence-first genealogy skill for AI agents (Codex, Claude Code): church books,",
+        "summary": "Evidence-first genealogy skill for AI agents (Codex, Claude Code): church books, civil, military, deportation and repression records across the former USSR. Replies in your language.",
+        "key_points": [
+          "スター数: 1281",
+          "主要言語: Python"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [
+          "Python"
+        ],
+        "target_users": "README からは不明"
+      }
+    },
+    {
+      "repo": {
+        "full_name": "ccch1mneyyy/dsh-go",
+        "html_url": "https://github.com/ccch1mneyyy/dsh-go",
+        "description": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。",
+        "stars": 1227,
+        "forks": 51,
+        "language": "Dart",
+        "topics": [
+          "ai-agent",
+          "android",
+          "android-app",
+          "coding-agent",
+          "deepseek",
+          "deepseek-harness",
+          "dsh",
+          "dsh-plugin",
+          "dsh-tui",
+          "flutter",
+          "llm"
+        ],
+        "created_at": "2026-10-25T08:09:52Z",
+        "default_branch": "main",
+        "license": "AGPL-3.0",
+        "category": "theme",
+        "matched_themes": [
+          "LLM"
+        ]
+      },
+      "summary": {
+        "one_liner": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。",
+        "summary": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。",
+        "key_points": [
+          "スター数: 1227",
+          "主要言語: Dart"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [
+          "Dart"
+        ],
+        "target_users": "README からは不明"
+      }
+    },
+    {
+      "repo": {
+        "full_name": "qybaihe/bla",
+        "html_url": "https://github.com/qybaihe/bla",
+        "description": "🛡️ BLA (Blind LLM Agents) — Adversarial defense shield that protects binaries, Electron apps, JS bundles, Python, and WebAssembly against AI reverse-engineering agents like REA. Poison -> Exhaust -> Hallucinate.",
+        "stars": 1082,
+        "forks": 148,
+        "language": "TypeScript",
+        "topics": [
+          "adversarial-ai",
+          "claude-code",
+          "cursor",
+          "electron-security",
+          "llm-security",
+          "mcp",
+          "mcp-server",
+          "obfuscation",
+          "reverse-engineering",
+          "webassembly"
+        ],
+        "created_at": "2026-10-25T05:25:45Z",
+        "default_branch": "main",
+        "license": "MIT",
+        "category": "theme",
+        "matched_themes": [
+          "LLM",
+          "AI agent"
+        ]
+      },
+      "summary": {
+        "one_liner": "🛡️ BLA (Blind LLM Agents) — Adversarial defense shield that protects binaries, E",
+        "summary": "🛡️ BLA (Blind LLM Agents) — Adversarial defense shield that protects binaries, Electron apps, JS bundles, Python, and WebAssembly against AI reverse-engineering agents like REA. Poison -> Exhaust -> Hallucinate.",
+        "key_points": [
+          "スター数: 1082",
+          "主要言語: TypeScript"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [
+          "TypeScript"
+        ],
+        "target_users": "README からは不明"
+      }
+    },
+    {
+      "repo": {
+        "full_name": "anonnerdfrenzy/survival-llm",
+        "html_url": "https://github.com/anonnerdfrenzy/survival-llm",
+        "description": "A free AI assistant and survival library that runs on your own computer, with no internet needed. Shows the source of every answer.",
+        "stars": 815,
+        "forks": 68,
+        "language": "Python",
+        "topics": [],
+        "created_at": "2026-10-24T19:12:41Z",
+        "default_branch": "main",
+        "license": "NOASSERTION",
+        "category": "theme",
+        "matched_themes": [
+          "LLM"
+        ]
+      },
+      "summary": {
+        "one_liner": "A free AI assistant and survival library that runs on your own computer, with no",
+        "summary": "A free AI assistant and survival library that runs on your own computer, with no internet needed. Shows the source of every answer.",
+        "key_points": [
+          "スター数: 815",
+          "主要言語: Python"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [
+          "Python"
+        ],
+        "target_users": "README からは不明"
+      }
+    },
+    {
+      "repo": {
+        "full_name": "unclebob/ub-mode",
+        "html_url": "https://github.com/unclebob/ub-mode",
+        "description": "",
+        "stars": 5044,
+        "forks": 281,
+        "language": "",
+        "topics": [],
+        "created_at": "2026-10-25T16:04:09Z",
+        "default_branch": "master",
+        "license": "",
+        "category": "general",
+        "matched_themes": []
+      },
+      "summary": {
+        "one_liner": "説明文はありません。",
+        "summary": "説明文はありません。",
+        "key_points": [
+          "スター数: 5044",
+          "主要言語: 不明"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [],
+        "target_users": "README からは不明"
+      }
+    },
+    {
+      "repo": {
+        "full_name": "rddmwmddr/android-ad-cleaner",
+        "html_url": "https://github.com/rddmwmddr/android-ad-cleaner",
+        "description": "关掉国产安卓手机系统里的广告、热搜、资讯推荐和营销推送。不 root，可还原，支持 AI 智能体一键执行。",
+        "stars": 4898,
+        "forks": 440,
+        "language": "Python",
+        "topics": [
+          "adb",
+          "ai-agent",
+          "android",
+          "coloros",
+          "debloat",
+          "hyperos",
+          "magicos",
+          "originos"
+        ],
+        "created_at": "2026-10-24T05:35:47Z",
+        "default_branch": "main",
+        "license": "MIT",
+        "category": "general",
+        "matched_themes": []
+      },
+      "summary": {
+        "one_liner": "关掉国产安卓手机系统里的广告、热搜、资讯推荐和营销推送。不 root，可还原，支持 AI 智能体一键执行。",
+        "summary": "关掉国产安卓手机系统里的广告、热搜、资讯推荐和营销推送。不 root，可还原，支持 AI 智能体一键执行。",
+        "key_points": [
+          "スター数: 4898",
+          "主要言語: Python"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [
+          "Python"
+        ],
+        "target_users": "README からは不明"
+      }
+    },
+    {
+      "repo": {
+        "full_name": "JustAResearcher/gpu-unlock-ada",
+        "html_url": "https://github.com/JustAResearcher/gpu-unlock-ada",
+        "description": "GPU tensor unlock source for RTX 4090 and experimental RTX 4070 Ti SUPER; firmware generated locally",
+        "stars": 4545,
+        "forks": 580,
+        "language": "C",
+        "topics": [],
+        "created_at": "2026-10-23T21:00:53Z",
+        "default_branch": "main",
+        "license": "GPL-2.0",
+        "category": "general",
+        "matched_themes": []
+      },
+      "summary": {
+        "one_liner": "GPU tensor unlock source for RTX 4090 and experimental RTX 4070 Ti SUPER; firmwa",
+        "summary": "GPU tensor unlock source for RTX 4090 and experimental RTX 4070 Ti SUPER; firmware generated locally",
+        "key_points": [
+          "スター数: 4545",
+          "主要言語: C"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [
+          "C"
+        ],
+        "target_users": "README からは不明"
+      }
+    },
+    {
+      "repo": {
+        "full_name": "interplains/Zero-Breach-Toolkit",
+        "html_url": "https://github.com/interplains/Zero-Breach-Toolkit",
+        "description": "Free, open-source, offline checks for traces of known mercenary spyware. Works on Windows, macOS and Linux, Android phones and iPhone backups.",
+        "stars": 3698,
+        "forks": 392,
+        "language": "Python",
+        "topics": [],
+        "created_at": "2026-10-25T14:41:34Z",
+        "default_branch": "main",
+        "license": "Apache-2.0",
+        "category": "general",
+        "matched_themes": []
+      },
+      "summary": {
+        "one_liner": "Free, open-source, offline checks for traces of known mercenary spyware. Works o",
+        "summary": "Free, open-source, offline checks for traces of known mercenary spyware. Works on Windows, macOS and Linux, Android phones and iPhone backups.",
+        "key_points": [
+          "スター数: 3698",
+          "主要言語: Python"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [
+          "Python"
+        ],
+        "target_users": "README からは不明"
+      }
+    },
+    {
+      "repo": {
+        "full_name": "anhao/ai-pose-gallery-zh",
+        "html_url": "https://github.com/anhao/ai-pose-gallery-zh",
+        "description": "中文版 AI 姿势参考图库 · 1439 组 / 2878 张图片 / 完整汉化 · 零依赖静态画廊",
+        "stars": 3600,
+        "forks": 933,
+        "language": "HTML",
+        "topics": [
+          "ai-art",
+          "chinese",
+          "cloudflare-pages",
+          "gallery",
+          "i18n",
+          "pose",
+          "reference-images",
+          "static-site"
+        ],
+        "created_at": "2026-10-27T12:24:37Z",
+        "default_branch": "main",
+        "license": "NOASSERTION",
+        "category": "general",
+        "matched_themes": []
+      },
+      "summary": {
+        "one_liner": "中文版 AI 姿势参考图库 · 1439 组 / 2878 张图片 / 完整汉化 · 零依赖静态画廊",
+        "summary": "中文版 AI 姿势参考图库 · 1439 组 / 2878 张图片 / 完整汉化 · 零依赖静态画廊",
+        "key_points": [
+          "スター数: 3600",
+          "主要言語: HTML"
+        ],
+        "details": [
+          {
+            "heading": "注記",
+            "body": "自動解説の生成に失敗しました（API エラー）。"
+          }
+        ],
+        "tech_stack": [
+          "HTML"
+        ],
+        "target_users": "README からは不明"
+      }
+    }
+  ]
+}
