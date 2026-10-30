@@ -4,6 +4,23 @@ on:
   schedule:
     - cron: "0 1 * * 1" # 毎週月曜 10:00 JST（GitHub 側の混雑で数分〜数十分遅れることがある）
   workflow_dispatch: # 管理画面や Actions タブから手動実行
+    inputs: # 空欄なら config/themes.json の値を使う（特別実行用）
+      days:
+        description: "対象期間（日）。例: 365"
+        required: false
+        default: ""
+      themed_count:
+        description: "テーマありの件数（0〜30）"
+        required: false
+        default: ""
+      general_count:
+        description: "テーマなしの件数（0〜30）"
+        required: false
+        default: ""
+      label:
+        description: "出力フォルダ名の末尾（例: special）。空欄なら日付のみ"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -32,10 +49,20 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: レポートを作成
-        run: python -m digest
+        run: |
+          args=()
+          [ -n "$DAYS" ] && args+=(--days "$DAYS")
+          [ -n "$THEMED_COUNT" ] && args+=(--themed-count "$THEMED_COUNT")
+          [ -n "$GENERAL_COUNT" ] && args+=(--general-count "$GENERAL_COUNT")
+          [ -n "$LABEL" ] && args+=(--label "$LABEL")
+          python -m digest "${args[@]}"
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DAYS: ${{ inputs.days }}
+          THEMED_COUNT: ${{ inputs.themed_count }}
+          GENERAL_COUNT: ${{ inputs.general_count }}
+          LABEL: ${{ inputs.label }}
 
       - name: レポートをコミット
         run: |

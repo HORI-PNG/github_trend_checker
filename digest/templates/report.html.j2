@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<title>GitHub 週間スター上位レポート {{ meta.date }}</title>
+<title>{{ meta.title }} {{ meta.date }}</title>
 <style>
   @page {
     size: A4;
@@ -34,7 +34,7 @@
 </head>
 <body>
 <section class="cover">
-  <h1>GitHub 週間スター上位レポート</h1>
+  <h1>{{ meta.title }}</h1>
   <div class="sub">
     {{ meta.date }} 作成 ／ 対象: {{ meta.since }} 以降に作成されたリポジトリ<br>
     テーマ: {{ meta.themes | join("、") if meta.themes else "（なし）" }}{% if meta.language %} ／ 言語: {{ meta.language }}{% endif %}

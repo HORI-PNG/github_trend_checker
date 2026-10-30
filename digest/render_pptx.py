@@ -97,7 +97,7 @@ def render_pptx(meta: dict, entries: list[dict], path: Path) -> None:
     # 表紙
     slide = prs.slides.add_slide(blank)
     tf = _textbox(slide, MARGIN, Inches(2.4), BODY_W, Inches(3))
-    _add_para(tf, "GitHub 週間スター上位レポート", 36, bold=True, first=True)
+    _add_para(tf, meta["title"], 36, bold=True, first=True)
     _add_para(tf, f"{meta['date']} 作成 ／ 対象: {meta['since']} 以降に作成されたリポジトリ", 16, color=MUTED)
     themes = "、".join(meta["themes"]) or "（なし）"
     _add_para(tf, f"テーマ: {themes}", 16, color=MUTED)
