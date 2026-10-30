@@ -102,7 +102,8 @@ def fallback_summary(repo: Repo, reason: str) -> dict:
     }
 
 
-def summarize(client: anthropic.Anthropic, repo: Repo) -> dict:
+def summarize(client: anthropic.Anthropic, repo: Repo) -> dict | None:
+    """解説 JSON を返す。失敗時は None。API キーの問題は全件に影響するので例外のまま投げる。"""
     try:
         with client.beta.messages.stream(
             model=MODEL,
@@ -114,9 +115,11 @@ def summarize(client: anthropic.Anthropic, repo: Repo) -> dict:
             messages=[{"role": "user", "content": _build_prompt(repo)}],
         ) as stream:
             message = stream.get_final_message()
+    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError):
+        raise
     except anthropic.APIError as e:
         log.error("%s: Claude API エラー: %s", repo.full_name, e)
-        return fallback_summary(repo, "自動解説の生成に失敗しました（API エラー）。")
+        return None
 
     usage = message.usage
     log.info(
@@ -128,11 +131,11 @@ def summarize(client: anthropic.Anthropic, repo: Repo) -> dict:
     )
     if message.stop_reason != "end_turn":
         log.error("%s: 想定外の stop_reason=%s", repo.full_name, message.stop_reason)
-        return fallback_summary(repo, f"自動解説の生成に失敗しました（{message.stop_reason}）。")
+        return None
 
     text = next((b.text for b in message.content if b.type == "text"), "")
     try:
         return json.loads(text)
     except json.JSONDecodeError:
         log.error("%s: 応答が JSON として読めませんでした", repo.full_name)
-        return fallback_summary(repo, "自動解説の生成に失敗しました（応答形式エラー）。")
+        return None

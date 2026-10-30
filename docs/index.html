@@ -100,6 +100,7 @@
   const $ = (id) => document.getElementById(id);
   let configSha = null;
   let currentConfig = {};
+  let dirty = false;
 
   function getToken() {
     try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; }
@@ -142,12 +143,13 @@
     return false;
   }
 
+  // 保存できたら true を返す（「今すぐ実行」の前にも呼ぶ）
   async function saveConfig() {
-    if (!requireToken()) return;
+    if (!requireToken()) return false;
     const counts = ["themed_count", "general_count"].map((id) => Number($(id).value));
     if (counts.some((n) => !Number.isInteger(n) || n < 0 || n > 20)) {
       setStatus("件数は 0〜20 の整数で入力してください。", "err");
-      return;
+      return false;
     }
     const config = {
       ...currentConfig,
@@ -169,27 +171,36 @@
           branch: "main",
         }),
       });
-      if (!res.ok) throw new Error(`保存に失敗しました (${res.status})`);
+      if (!res.ok) throw new Error(`保存に失敗しました (${res.status}): ${await errorDetail(res)}`);
       configSha = (await res.json()).content.sha;
       currentConfig = config;
+      dirty = false;
       setStatus("保存しました。次回の収集から反映されます。", "ok");
+      return true;
     } catch (e) {
       setStatus(e.message, "err");
+      return false;
     } finally {
       $("save").disabled = false;
     }
   }
 
+  async function errorDetail(res) {
+    try { return (await res.json()).message || ""; } catch { return ""; }
+  }
+
   async function runNow() {
     if (!requireToken()) return;
+    // 未保存の変更があれば、先に保存してから実行する
+    if (dirty && !(await saveConfig())) return;
     $("run").disabled = true;
     setStatus("実行を依頼しています…");
     try {
       const res = await fetch(`${API}/actions/workflows/weekly-digest.yml/dispatches`, {
         method: "POST", headers: headers(true), body: JSON.stringify({ ref: "main" }),
       });
-      if (!res.ok) throw new Error(`実行の依頼に失敗しました (${res.status})`);
-      setStatus("実行を開始しました。完了まで 10〜20 分ほどかかります。", "ok");
+      if (!res.ok) throw new Error(`実行の依頼に失敗しました (${res.status}): ${await errorDetail(res)}`);
+      setStatus("保存済みの設定で実行を開始しました。完了まで 10〜20 分ほどかかります。", "ok");
     } catch (e) {
       setStatus(e.message, "err");
     } finally {
@@ -227,6 +238,12 @@
   }
 
   $("save").addEventListener("click", saveConfig);
+  for (const id of ["themes", "language", "themed_count", "general_count"]) {
+    $(id).addEventListener("input", () => {
+      dirty = true;
+      setStatus("未保存の変更があります（「今すぐ実行」でも自動で保存されます）。");
+    });
+  }
   $("run").addEventListener("click", runNow);
   $("token-save").addEventListener("click", () => {
     try { localStorage.setItem(TOKEN_KEY, $("token").value.trim()); } catch {}

@@ -103,8 +103,20 @@ def main(argv: list[str] | None = None) -> int:
         import anthropic
 
         client = anthropic.Anthropic()
-        with ThreadPoolExecutor(max_workers=args.workers) as pool:
-            summaries = list(pool.map(lambda r: summarize(client, r), repos))
+        try:
+            with ThreadPoolExecutor(max_workers=args.workers) as pool:
+                results = list(pool.map(lambda r: summarize(client, r), repos))
+        except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as e:
+            log.error("Claude API の認証に失敗しました。ANTHROPIC_API_KEY を確認してください: %s", e)
+            return 1
+        failed = sum(s is None for s in results)
+        if repos and failed == len(repos):
+            log.error("全件の解説生成に失敗したため、レポートを出力しません")
+            return 1
+        summaries = [
+            s if s is not None else fallback_summary(r, "自動解説の生成に失敗したため、説明文のみ掲載しています。")
+            for r, s in zip(repos, results)
+        ]
 
     meta = {
         "date": now.strftime("%Y-%m-%d"),
