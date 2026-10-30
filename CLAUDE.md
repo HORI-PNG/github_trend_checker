@@ -31,7 +31,13 @@ GITHUB_TOKEN=$(gh auth token) ANTHROPIC_API_KEY=... python -m digest # 本番と
 ```
 
 - `--dry-run` は Claude API を呼ばず、リポジトリの説明文でダミーの解説を作る（費用ゼロで PDF/PPTX の見た目を確認できる）
-- 出力先は `--out` で変更可能。ローカル確認時は `--out tmp/` を使い、`reports/` を汚さない
+- 出力先の既定は `tmp/reports/`（git 管理外）。Actions だけが `--out reports` で `reports/` に書く
+- 特別実行用の上書き: `--days` `--themed-count` `--general-count` `--themes "A,B"` `--balanced`（テーマごとに均等に選ぶ）`--label`（出力フォルダ名の末尾）。Actions の Run workflow の入力欄からも同じ指定ができる
+
+## ローカルの reports/
+
+- ローカルのクローンは sparse-checkout で `reports/` を除外している（レポートを手元に置かない方針）。`git pull` しても `reports/` は展開されない
+- レポートを見るときは管理画面か GitHub 上で見る。解除する場合は `git sparse-checkout disable`
 
 ## 環境
 

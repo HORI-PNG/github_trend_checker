@@ -21,6 +21,15 @@ on:
         description: "出力フォルダ名の末尾（例: special）。空欄なら日付のみ"
         required: false
         default: ""
+      themes:
+        description: "テーマをカンマ区切りで上書き（例: RAG,GraphRAG）"
+        required: false
+        default: ""
+      balanced:
+        description: "テーマごとに均等に選ぶ"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -50,7 +59,9 @@ jobs:
 
       - name: レポートを作成
         run: |
-          args=()
+          args=(--out reports)
+          [ -n "$THEMES" ] && args+=(--themes "$THEMES")
+          [ "$BALANCED" = "true" ] && args+=(--balanced)
           [ -n "$DAYS" ] && args+=(--days "$DAYS")
           [ -n "$THEMED_COUNT" ] && args+=(--themed-count "$THEMED_COUNT")
           [ -n "$GENERAL_COUNT" ] && args+=(--general-count "$GENERAL_COUNT")
@@ -63,6 +74,8 @@ jobs:
           THEMED_COUNT: ${{ inputs.themed_count }}
           GENERAL_COUNT: ${{ inputs.general_count }}
           LABEL: ${{ inputs.label }}
+          THEMES: ${{ inputs.themes }}
+          BALANCED: ${{ inputs.balanced }}
 
       - name: レポートをコミット
         run: |

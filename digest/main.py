@@ -18,16 +18,31 @@ JST = timezone(timedelta(hours=9))
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def select_repos(gh: GitHubClient, cfg: Config, since: str) -> list[Repo]:
+def select_repos(gh: GitHubClient, cfg: Config, since: str, balanced: bool = False) -> list[Repo]:
     lang = f" language:{cfg.language}" if cfg.language else ""
 
     themed: dict[str, Repo] = {}
+    ranked_names: list[list[str]] = []  # テーマごとのスター順のリポジトリ名
     for theme in cfg.themes:
         query = f"{theme} in:name,description,topics created:>={since}{lang}"
+        names = []
         for item in gh.search_repos(query):
             repo = themed.setdefault(item["full_name"], Repo.from_api(item, "theme"))
             repo.matched_themes.append(theme)
-    themed_top = sorted(themed.values(), key=lambda r: r.stars, reverse=True)[: cfg.themed_count]
+            names.append(item["full_name"])
+        ranked_names.append(names)
+
+    if balanced:
+        # 各テーマの上位から1件ずつ順番に取り、特定のテーマに偏らないようにする
+        picked: dict[str, Repo] = {}
+        for rank in range(max(map(len, ranked_names), default=0)):
+            for names in ranked_names:
+                if len(picked) < cfg.themed_count and rank < len(names):
+                    picked.setdefault(names[rank], themed[names[rank]])
+        candidates = list(picked.values())
+    else:
+        candidates = list(themed.values())
+    themed_top = sorted(candidates, key=lambda r: r.stars, reverse=True)[: cfg.themed_count]
 
     taken = {r.full_name for r in themed_top}
     general_top: list[Repo] = []
@@ -75,13 +90,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="GitHub 週間スター上位レポートを作成する")
     parser.add_argument("--dry-run", action="store_true", help="Claude API を呼ばずに出力まで行う")
     parser.add_argument("--limit", type=int, help="処理するリポジトリ数の上限（動作確認用）")
-    parser.add_argument("--out", type=Path, default=ROOT / "reports", help="出力先ディレクトリ")
+    # 既定はローカル用の tmp/reports（git 管理外）。Actions では --out reports を指定する
+    parser.add_argument("--out", type=Path, default=ROOT / "tmp" / "reports", help="出力先ディレクトリ")
     parser.add_argument("--workers", type=int, default=3, help="Claude API の並列数")
     # 特別実行用: 設定ファイルの値をこの実行だけ上書きする
     parser.add_argument("--days", type=int, help="対象期間（日）を上書き（1〜3650）")
     parser.add_argument("--themed-count", type=int, help="テーマありの件数を上書き（0〜30）")
     parser.add_argument("--general-count", type=int, help="テーマなしの件数を上書き（0〜30）")
     parser.add_argument("--label", help="出力フォルダ名の末尾に付ける名前（例: special）")
+    parser.add_argument("--themes", help="テーマをカンマ区切りで上書き（例: RAG,GraphRAG）")
+    parser.add_argument("--balanced", action="store_true", help="テーマごとに均等に選ぶ（スター順で1テーマに偏らせない）")
     args = parser.parse_args(argv)
     for name, lo, hi in (("days", 1, 3650), ("themed_count", 0, 30), ("general_count", 0, 30)):
         value = getattr(args, name)
@@ -100,6 +118,8 @@ def main(argv: list[str] | None = None) -> int:
         for k, v in (("days", args.days), ("themed_count", args.themed_count), ("general_count", args.general_count))
         if v is not None
     }
+    if args.themes:
+        overrides["themes"] = [t.strip() for t in args.themes.split(",") if t.strip()]
     if overrides:
         cfg = replace(cfg, **overrides)
         log.info("この実行だけ設定を上書きします: %s", overrides)
@@ -108,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     log.info("対象期間: %s 以降 / テーマ: %s", since, cfg.themes)
 
     gh = GitHubClient()
-    repos = select_repos(gh, cfg, since)
+    repos = select_repos(gh, cfg, since, balanced=args.balanced)
     if args.limit:
         repos = repos[: args.limit]
     log.info("選定: %s", [r.full_name for r in repos])
