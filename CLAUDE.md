@@ -13,7 +13,7 @@ GitHub で「直近1週間に作成されたリポジトリ」をスター数順
   - `main.py` … 全体の流れ（選定 → 情報収集 → 要約 → 出力）
 - **設定**: `config/themes.json`（テーマのキーワード・言語・件数）。管理画面から編集される
 - **管理画面**: `docs/index.html`（GitHub Pages、静的 HTML + 素の JS）。GitHub API で `config/themes.json` を読み書きし、`reports/` の一覧を表示する
-- **定期実行**: `.github/workflows/weekly-digest.yml`（毎週月曜 10:00 JST = `0 1 * * 1` UTC）。生成物を `reports/YYYY-MM-DD/` にコミットする
+- **定期実行**: `.github/workflows/weekly-digest.yml`（毎週月曜 8:50 JST = `50 23 * * 0` UTC。毎時 0 分は取りこぼしが起きやすいので避ける）。生成物を `reports/YYYY-MM-DD/` にコミットする
 - **出力**: `reports/YYYY-MM-DD/` に `report.pdf` `report.pptx` `report.md` `data.json`
 
 ## 選定ルール

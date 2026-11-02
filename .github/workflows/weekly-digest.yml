@@ -2,7 +2,9 @@ name: Weekly GitHub Digest
 
 on:
   schedule:
-    - cron: "0 1 * * 1" # 毎週月曜 10:00 JST（GitHub 側の混雑で数分〜数十分遅れることがある）
+    # 毎週月曜 8:50 JST（= 日曜 23:50 UTC）。9:00 頃にレポートが揃う
+    # 毎時 0 分は GitHub 側が混雑して遅延・取りこぼしが起きやすいので避けている
+    - cron: "50 23 * * 0"
   workflow_dispatch: # 管理画面や Actions タブから手動実行
     inputs: # 空欄なら config/themes.json の値を使う（特別実行用）
       days:
