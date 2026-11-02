@@ -1,9 +1,13 @@
 {
-  "themes": [
-    "WebLLM"
-  ],
-  "language": "",
-  "themed_count": 5,
-  "general_count": 5,
-  "days": 7
+  "profiles": [
+    {
+      "name": "WebLLM",
+      "themes": ["WebLLM"],
+      "language": "",
+      "days": 7,
+      "themed_count": 5,
+      "general_count": 5,
+      "balanced": false
+    }
+  ]
 }

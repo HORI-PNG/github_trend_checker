@@ -24,7 +24,7 @@ on:
         required: false
         default: ""
       themes:
-        description: "テーマをカンマ区切りで上書き（例: RAG,GraphRAG）"
+        description: "テーマをカンマ区切りで上書き（例: RAG,GraphRAG）。上書きがあると設定1をベースに1冊だけ作る"
         required: false
         default: ""
       balanced:
@@ -61,7 +61,7 @@ jobs:
 
       - name: レポートを作成
         run: |
-          args=(--out reports)
+          args=(--out reports --prune-days 14) # 直近 2 週間分のフォルダだけ残す
           [ -n "$THEMES" ] && args+=(--themes "$THEMES")
           [ "$BALANCED" = "true" ] && args+=(--balanced)
           [ -n "$DAYS" ] && args+=(--days "$DAYS")
@@ -83,7 +83,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports
+          git add -A reports # 新しいレポートの追加と、古いフォルダの削除の両方
           if git diff --cached --quiet; then
             echo "変更なし"
             exit 0

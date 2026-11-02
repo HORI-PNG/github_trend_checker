@@ -1,6 +1,6 @@
 # github_trend_checker
 
-毎週月曜 8:50（JST）に、直近1週間に作られた GitHub リポジトリをスター順に集め、Claude が日本語で解説した PDF / PPTX を `reports/` に保存します。
+毎週月曜 8:50（JST）に、GitHub リポジトリをスター順に集め、Claude が日本語で解説した PDF を `reports/` に保存します。収集設定は最大 3 セットで、設定ごとに 1 冊の PDF を作ります。レポートは直近 2 週間分だけ残ります。
 
 - テーマあり: 管理画面で設定したキーワードに関連するもの（既定 5 件）
 - テーマなし: 単純にスターが多いもの（既定 5 件）
@@ -23,7 +23,7 @@
 
 - 管理画面: `https://<ユーザー名>.github.io/github_trend_checker/`
 - 手動実行: 管理画面の「今すぐ実行」または Actions タブ → Weekly GitHub Digest → Run workflow
-- レポート: `reports/YYYY-MM-DD/`（`report.pdf` / `report.pptx` / `report.md` / `data.json`）
+- レポート: `reports/YYYY-MM-DD/report_1.pdf` 〜 `report_3.pdf`（設定 1〜3 に対応）
 
 ## ローカル実行
 

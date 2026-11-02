@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<title>{{ meta.title }} {{ meta.date }}</title>
+<title>GitHub スター上位レポート {{ meta.title }} {{ meta.date }}</title>
 <style>
   @page {
     size: A4;
@@ -16,6 +16,7 @@
   h3 { font-size: 11.5pt; margin: 5mm 0 1mm; padding-left: 2.5mm; border-left: 3px solid #0969da; }
   .cover { page-break-after: always; }
   .cover .sub { color: #57606a; margin-bottom: 8mm; }
+  .cover .kicker { color: #0969da; font-weight: bold; font-size: 10pt; margin-bottom: 1mm; }
   table.toc { width: 100%; border-collapse: collapse; font-size: 9pt; }
   table.toc th, table.toc td { border-bottom: 1px solid #d0d7de; padding: 1.6mm 2mm; text-align: left; vertical-align: top; }
   table.toc th { background: #f6f8fa; }
@@ -34,9 +35,10 @@
 </head>
 <body>
 <section class="cover">
+  <div class="kicker">GitHub スター上位レポート</div>
   <h1>{{ meta.title }}</h1>
   <div class="sub">
-    {{ meta.date }} 作成 ／ 対象: {{ meta.since }} 以降に作成されたリポジトリ<br>
+    {{ meta.date }} 作成 ／ 対象: 過去 {{ meta.days }} 日（{{ meta.since }} 以降）に作成されたリポジトリ<br>
     テーマ: {{ meta.themes | join("、") if meta.themes else "（なし）" }}{% if meta.language %} ／ 言語: {{ meta.language }}{% endif %}
   </div>
   <table class="toc">

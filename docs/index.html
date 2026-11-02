@@ -24,15 +24,22 @@
   section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
   h2 { font-size: 1.05rem; margin: 0 0 12px; }
   label { display: block; font-weight: 600; font-size: .9rem; margin: 12px 0 4px; }
+  label.check { display: flex; align-items: center; gap: 8px; font-weight: normal; }
+  label.check input { width: auto; }
   .hint { color: var(--muted); font-size: .8rem; font-weight: normal; }
   input, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
                     background: var(--bg); color: var(--text); font: inherit; }
-  textarea { min-height: 110px; resize: vertical; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  textarea { min-height: 90px; resize: vertical; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
   button { margin-top: 14px; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--accent);
            background: var(--accent); color: var(--accent-text); font: inherit; font-weight: 600; cursor: pointer; }
   button.sub { background: transparent; color: var(--accent); }
+  button.danger { background: transparent; color: var(--err); border-color: var(--err); margin-top: 0; padding: 4px 10px; font-size: .85rem; }
   button:disabled { opacity: .5; cursor: default; }
+  .profile { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+  .profile-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .profile-head strong { font-size: .95rem; }
   .status { margin-top: 10px; font-size: .9rem; min-height: 1.4em; }
   .status.ok { color: var(--ok); } .status.err { color: var(--err); }
   ul.reports { list-style: none; margin: 0; padding: 0; }
@@ -46,26 +53,16 @@
 <body>
 <main>
   <h1>GitHub Digest 管理</h1>
-  <p class="lead">毎週月曜 8:50 に、直近1週間で作られたリポジトリをスター順に集めてレポートにします。</p>
+  <p class="lead">毎週月曜 8:50 に、設定ごとにリポジトリをスター順に集めて PDF にします（最大3冊）。レポートは直近2週間分だけ残ります。</p>
 
   <section>
     <h2>収集設定</h2>
-    <label for="themes">テーマ <span class="hint">1行に1つ。キーワードごとに検索します</span></label>
-    <textarea id="themes" placeholder="LLM&#10;AI agent"></textarea>
-    <label for="language">言語で絞る <span class="hint">例: Python（空欄なら全言語）</span></label>
-    <input id="language" type="text">
-    <div class="row">
-      <div>
-        <label for="themed_count">テーマありの件数</label>
-        <input id="themed_count" type="number" min="0" max="20">
-      </div>
-      <div>
-        <label for="general_count">テーマなしの件数</label>
-        <input id="general_count" type="number" min="0" max="20">
-      </div>
+    <div id="profiles"></div>
+    <button id="add" class="sub">設定を追加</button>
+    <div>
+      <button id="save">保存</button>
+      <button id="run" class="sub">今すぐ実行</button>
     </div>
-    <button id="save">保存</button>
-    <button id="run" class="sub">今すぐ実行</button>
     <div id="status" class="status"></div>
   </section>
 
@@ -87,6 +84,36 @@
   </section>
 </main>
 
+<template id="profile-template">
+  <div class="profile">
+    <div class="profile-head">
+      <strong class="profile-no"></strong>
+      <button class="danger remove" type="button">この設定を削除</button>
+    </div>
+    <label>名前 <span class="hint">PDF の表紙に出ます</span></label>
+    <input data-key="name" type="text" placeholder="例: RAG 系">
+    <label>テーマ <span class="hint">1行に1つ。空欄ならテーマなし（スター順のみ）</span></label>
+    <textarea data-key="themes" placeholder="LLM&#10;AI agent"></textarea>
+    <label>言語で絞る <span class="hint">例: Python（空欄なら全言語）</span></label>
+    <input data-key="language" type="text">
+    <div class="row">
+      <div>
+        <label>期間（日）</label>
+        <input data-key="days" type="number" min="1" max="365">
+      </div>
+      <div>
+        <label>テーマありの件数</label>
+        <input data-key="themed_count" type="number" min="0" max="20">
+      </div>
+      <div>
+        <label>テーマなしの件数</label>
+        <input data-key="general_count" type="number" min="0" max="20">
+      </div>
+    </div>
+    <label class="check"><input data-key="balanced" type="checkbox"> テーマごとに均等に選ぶ <span class="hint">（1つのテーマに偏らせない）</span></label>
+  </div>
+</template>
+
 <script>
   // GitHub Pages の URL（<owner>.github.io/<repo>/）からリポジトリを特定する
   const OWNER = location.hostname.endsWith(".github.io") ? location.hostname.split(".")[0] : "HORI-PNG";
@@ -96,10 +123,13 @@
   const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
   const CONFIG_PATH = "config/themes.json";
   const TOKEN_KEY = "digest-token";
+  const MAX_PROFILES = 3;
+  const DEFAULT_PROFILE = {
+    name: "", themes: [], language: "", days: 7, themed_count: 5, general_count: 5, balanced: false,
+  };
 
   const $ = (id) => document.getElementById(id);
   let configSha = null;
-  let currentConfig = {};
   let dirty = false;
 
   function getToken() {
@@ -123,17 +153,77 @@
   };
   const fromBase64 = (b64) =>
     new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\n/g, "")), (c) => c.charCodeAt(0)));
+  async function errorDetail(res) {
+    try { return (await res.json()).message || ""; } catch { return ""; }
+  }
+  function markDirty() {
+    dirty = true;
+    setStatus("未保存の変更があります（「今すぐ実行」でも自動で保存されます）。");
+  }
+
+  // ---- 設定カード ----
+  function renumber() {
+    const cards = [...$("profiles").children];
+    cards.forEach((card, i) => {
+      card.querySelector(".profile-no").textContent = `設定 ${i + 1}（PDF ${i + 1} 冊目）`;
+      card.querySelector(".remove").disabled = cards.length <= 1;
+    });
+    $("add").disabled = cards.length >= MAX_PROFILES;
+  }
+
+  function addProfileCard(profile) {
+    const card = $("profile-template").content.firstElementChild.cloneNode(true);
+    const p = { ...DEFAULT_PROFILE, ...profile };
+    for (const el of card.querySelectorAll("[data-key]")) {
+      const key = el.dataset.key;
+      if (el.type === "checkbox") el.checked = Boolean(p[key]);
+      else if (key === "themes") el.value = (p.themes || []).join("\n");
+      else el.value = p[key] ?? "";
+    }
+    card.querySelector(".remove").addEventListener("click", () => {
+      card.remove();
+      renumber();
+      markDirty();
+    });
+    $("profiles").append(card);
+    renumber();
+  }
+
+  function readProfiles() {
+    return [...$("profiles").children].map((card, i) => {
+      const get = (key) => card.querySelector(`[data-key="${key}"]`);
+      const profile = {
+        name: get("name").value.trim() || `設定${i + 1}`,
+        themes: get("themes").value.split("\n").map((s) => s.trim()).filter(Boolean),
+        language: get("language").value.trim(),
+        days: Number(get("days").value),
+        themed_count: Number(get("themed_count").value),
+        general_count: Number(get("general_count").value),
+        balanced: get("balanced").checked,
+      };
+      const where = `設定 ${i + 1}`;
+      if (!Number.isInteger(profile.days) || profile.days < 1 || profile.days > 365) {
+        throw new Error(`${where}: 期間は 1〜365 の整数で入力してください。`);
+      }
+      for (const key of ["themed_count", "general_count"]) {
+        const n = profile[key];
+        if (!Number.isInteger(n) || n < 0 || n > 20) throw new Error(`${where}: 件数は 0〜20 の整数で入力してください。`);
+      }
+      if (profile.themed_count + profile.general_count === 0) throw new Error(`${where}: 件数がどちらも 0 です。`);
+      return profile;
+    });
+  }
 
   async function loadConfig() {
     const res = await fetch(`${API}/contents/${CONFIG_PATH}?ref=main`, { headers: headers(false), cache: "no-store" });
     if (!res.ok) throw new Error(`設定の読み込みに失敗しました (${res.status})`);
     const data = await res.json();
     configSha = data.sha;
-    currentConfig = JSON.parse(fromBase64(data.content));
-    $("themes").value = (currentConfig.themes || []).join("\n");
-    $("language").value = currentConfig.language || "";
-    $("themed_count").value = currentConfig.themed_count ?? 5;
-    $("general_count").value = currentConfig.general_count ?? 5;
+    const config = JSON.parse(fromBase64(data.content));
+    // 旧形式（設定 1 セットだけ）にも対応する
+    const profiles = config.profiles || [config];
+    $("profiles").innerHTML = "";
+    profiles.slice(0, MAX_PROFILES).forEach(addProfileCard);
   }
 
   function requireToken() {
@@ -146,18 +236,13 @@
   // 保存できたら true を返す（「今すぐ実行」の前にも呼ぶ）
   async function saveConfig() {
     if (!requireToken()) return false;
-    const counts = ["themed_count", "general_count"].map((id) => Number($(id).value));
-    if (counts.some((n) => !Number.isInteger(n) || n < 0 || n > 20)) {
-      setStatus("件数は 0〜20 の整数で入力してください。", "err");
+    let profiles;
+    try {
+      profiles = readProfiles();
+    } catch (e) {
+      setStatus(e.message, "err");
       return false;
     }
-    const config = {
-      ...currentConfig,
-      themes: $("themes").value.split("\n").map((s) => s.trim()).filter(Boolean),
-      language: $("language").value.trim(),
-      themed_count: counts[0],
-      general_count: counts[1],
-    };
     $("save").disabled = true;
     setStatus("保存中…");
     try {
@@ -166,14 +251,13 @@
         headers: headers(true),
         body: JSON.stringify({
           message: "設定を更新（管理画面）",
-          content: toBase64(JSON.stringify(config, null, 2) + "\n"),
+          content: toBase64(JSON.stringify({ profiles }, null, 2) + "\n"),
           sha: configSha,
           branch: "main",
         }),
       });
       if (!res.ok) throw new Error(`保存に失敗しました (${res.status}): ${await errorDetail(res)}`);
       configSha = (await res.json()).content.sha;
-      currentConfig = config;
       dirty = false;
       setStatus("保存しました。次回の収集から反映されます。", "ok");
       return true;
@@ -183,10 +267,6 @@
     } finally {
       $("save").disabled = false;
     }
-  }
-
-  async function errorDetail(res) {
-    try { return (await res.json()).message || ""; } catch { return ""; }
   }
 
   async function runNow() {
@@ -200,7 +280,7 @@
         method: "POST", headers: headers(true), body: JSON.stringify({ ref: "main" }),
       });
       if (!res.ok) throw new Error(`実行の依頼に失敗しました (${res.status}): ${await errorDetail(res)}`);
-      setStatus("保存済みの設定で実行を開始しました。完了まで 10〜20 分ほどかかります。", "ok");
+      setStatus("保存済みの設定で実行を開始しました。完了まで数分〜10分ほどかかります。", "ok");
     } catch (e) {
       setStatus(e.message, "err");
     } finally {
@@ -208,42 +288,41 @@
     }
   }
 
+  // ---- レポート一覧（reports/<フォルダ>/*.pdf）----
   async function loadReports() {
     const list = $("reports");
-    const res = await fetch(`${API}/contents/reports?ref=main`, { headers: headers(false), cache: "no-store" });
-    if (res.status === 404) { list.innerHTML = "<li>まだレポートはありません。</li>"; return; }
+    const res = await fetch(`${API}/git/trees/main?recursive=1`, { headers: headers(false), cache: "no-store" });
     if (!res.ok) { list.innerHTML = `<li>一覧の読み込みに失敗しました (${res.status})</li>`; return; }
-    const dirs = (await res.json()).filter((e) => e.type === "dir").map((e) => e.name).sort().reverse();
+    const pdfs = {};
+    for (const entry of (await res.json()).tree) {
+      const m = entry.path.match(/^reports\/([^/]+)\/([^/]+\.pdf)$/);
+      if (m) (pdfs[m[1]] ||= []).push(m[2]);
+    }
+    const dirs = Object.keys(pdfs).sort().reverse();
     if (!dirs.length) { list.innerHTML = "<li>まだレポートはありません。</li>"; return; }
     const base = `https://github.com/${OWNER}/${REPO}`;
     list.innerHTML = "";
     for (const d of dirs) {
       const li = document.createElement("li");
-      const links = [
-        ["PDF", `${base}/blob/main/reports/${d}/report.pdf`],
-        ["PPTX", `${base}/raw/main/reports/${d}/report.pptx`],
-        ["Web で読む", `${base}/blob/main/reports/${d}/report.md`],
-      ];
       const date = document.createElement("span");
       date.className = "date";
       date.textContent = d;
       li.append(date);
-      for (const [label, href] of links) {
+      for (const file of pdfs[d].sort()) {
+        const no = file.match(/report_(\d+)\.pdf/);
         const a = document.createElement("a");
-        a.href = href; a.textContent = label; a.target = "_blank"; a.rel = "noopener";
+        a.href = `${base}/raw/main/reports/${d}/${file}`;
+        a.textContent = no ? `PDF ${no[1]}` : "PDF";
+        a.target = "_blank"; a.rel = "noopener";
         li.append(a);
       }
       list.append(li);
     }
   }
 
+  $("add").addEventListener("click", () => { addProfileCard({}); markDirty(); });
+  $("profiles").addEventListener("input", markDirty);
   $("save").addEventListener("click", saveConfig);
-  for (const id of ["themes", "language", "themed_count", "general_count"]) {
-    $(id).addEventListener("input", () => {
-      dirty = true;
-      setStatus("未保存の変更があります（「今すぐ実行」でも自動で保存されます）。");
-    });
-  }
   $("run").addEventListener("click", runNow);
   $("token-save").addEventListener("click", () => {
     try { localStorage.setItem(TOKEN_KEY, $("token").value.trim()); } catch {}
