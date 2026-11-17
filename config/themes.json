@@ -1,8 +1,11 @@
 {
   "profiles": [
     {
-      "name": "WebLLM",
-      "themes": ["WebLLM"],
+      "name": "設定1",
+      "themes": [
+        "skills",
+        "WebAssembly"
+      ],
       "language": "",
       "days": 7,
       "themed_count": 5,
